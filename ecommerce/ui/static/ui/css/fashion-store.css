@@ -395,6 +395,7 @@ body.fashion-site { margin:0; color:var(--fashion-ink); background:#fff; font:15
     padding:4px;
   }
   .store-header__actions > a i { font-size:20px; }
+  .fashion-hero { padding-top:70px; }
 }
 
 @media(max-width:520px) {
