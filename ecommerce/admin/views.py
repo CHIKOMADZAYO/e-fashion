@@ -1,8 +1,9 @@
 import json
+from functools import wraps
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.core.paginator import Paginator
 from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
@@ -14,6 +15,16 @@ from django.views.decorators.http import require_http_methods
 
 from .models import StaffProfile, SiteSettings, AuditLog
 from .forms import AdminLoginForm
+
+
+def admin_login_required(view_func):
+    """Redirect unauthenticated users to the admin login page instead of the storefront login."""
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('admin_login')}?next={request.path}")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
 
 
 def admin_login(request):
@@ -37,6 +48,9 @@ def admin_login(request):
                         object_repr=f'Staff: {staff_profile}',
                         details={'ip': request.META.get('REMOTE_ADDR', '')}
                     )
+                    next_url = request.POST.get('next') or request.GET.get('next')
+                    if next_url and next_url.startswith('/'):
+                        return redirect(next_url)
                     return redirect('dashboard')
                 else:
                     messages.error(request, 'Your account is disabled.')
@@ -45,10 +59,10 @@ def admin_login(request):
     else:
         form = AdminLoginForm()
 
-    return render(request, 'metis/auth/admin_login.html', {'form': form})
+    return render(request, 'metis/auth/admin_login.html', {'form': form, 'next': request.GET.get('next', '')})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def admin_register(request):
     """Admin: Register a new staff user."""
@@ -118,7 +132,7 @@ def admin_logout(request):
     return redirect('admin_login')
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def dashboard(request):
     from ecommerce.ui.models import Order, Product
@@ -162,7 +176,7 @@ def dashboard(request):
     return render(request, 'metis/pages/index.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def orders(request):
     from ecommerce.ui.models import Order
@@ -181,7 +195,7 @@ def orders(request):
     return render(request, 'metis/pages/orders.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def order_detail(request, order_number):
     from ecommerce.ui.models import Order, OrderItem
@@ -195,7 +209,7 @@ def order_detail(request, order_number):
     return render(request, 'metis/pages/orders.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def products(request):
     from ecommerce.ui.models import Product, Category
@@ -215,7 +229,7 @@ def products(request):
     return render(request, 'metis/pages/products.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def users(request):
     from django.contrib.auth import get_user_model
@@ -229,7 +243,7 @@ def users(request):
     return render(request, 'metis/pages/users.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def categories(request):
     from ecommerce.ui.models import Category
@@ -241,7 +255,7 @@ def categories(request):
     return render(request, 'metis/pages/categories.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def settings_modal(request):
     from django.db import transaction
@@ -283,14 +297,14 @@ def settings_modal(request):
     return render(request, 'metis/pages/settings.html', context)
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def deprecated_page_redirect(request):
     """Redirect deprecated Metis pages to dashboard."""
     return redirect('dashboard')
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_settings_get(request):
     """API: Get SiteSettings."""
@@ -307,7 +321,7 @@ def api_settings_get(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["PATCH", "POST"])
 def api_settings_update(request):
@@ -355,7 +369,7 @@ def api_settings_update(request):
     return JsonResponse({'success': True, 'message': 'Settings updated successfully.'})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def audit_logs(request):
     from ecommerce.admin.models import AuditLog
@@ -363,7 +377,7 @@ def audit_logs(request):
     return render(request, 'metis/pages/audit-logs.html', {})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_audit_logs(request):
     """API: List audit logs with pagination, filtering, sorting."""
@@ -424,7 +438,7 @@ def api_audit_logs(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def export_data(request):
     from ecommerce.ui.models import Order, Product
@@ -446,7 +460,7 @@ def export_data(request):
     return JsonResponse({'data': data, 'type': export_type, 'exported_at': timezone.now().isoformat()})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def dashboard_stats_api(request):
     """API endpoint for dashboard statistics."""
@@ -491,7 +505,7 @@ def dashboard_stats_api(request):
 
 # ==================== ORDERS API ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_orders_list(request):
     """API: List orders with pagination, filtering, sorting."""
@@ -584,7 +598,7 @@ def api_orders_list(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_order_detail(request, order_number):
     """API: Get order detail."""
@@ -630,7 +644,7 @@ def api_order_detail(request, order_number):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["PATCH", "POST"])
 def api_order_update_status(request, order_number):
@@ -666,7 +680,7 @@ def api_order_update_status(request, order_number):
     return JsonResponse({'success': True, 'status': order.status})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["POST"])
 def api_orders_bulk(request):
@@ -707,7 +721,7 @@ def api_orders_bulk(request):
 
 # ==================== PRODUCTS API ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_products_list(request):
     """API: List products with pagination, filtering, sorting."""
@@ -803,7 +817,7 @@ def api_products_list(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_product_detail(request, product_id):
     """API: Get product detail."""
@@ -833,7 +847,7 @@ def api_product_detail(request, product_id):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["POST"])
 def api_product_create(request):
@@ -882,7 +896,7 @@ def api_product_create(request):
     return JsonResponse({'success': True, 'id': product.id, 'sku': product.sku})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["PATCH", "PUT"])
 def api_product_update(request, product_id):
@@ -935,7 +949,7 @@ def api_product_update(request, product_id):
     return JsonResponse({'success': True, 'id': product.id})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["DELETE"])
 def api_product_delete(request, product_id):
@@ -961,7 +975,7 @@ def api_product_delete(request, product_id):
 
 # ==================== USERS API ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_users_list(request):
     """API: List users with pagination, filtering, sorting."""
@@ -1038,7 +1052,7 @@ def api_users_list(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_user_detail(request, user_id):
     """API: Get user detail with orders."""
@@ -1075,7 +1089,7 @@ def api_user_detail(request, user_id):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["PATCH", "PUT"])
 def api_user_update(request, user_id):
@@ -1112,7 +1126,7 @@ def api_user_update(request, user_id):
 
 # ==================== CATEGORIES API ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_categories_list(request):
     """API: List categories."""
@@ -1135,7 +1149,7 @@ def api_categories_list(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["POST"])
 def api_category_create(request):
@@ -1163,7 +1177,7 @@ def api_category_create(request):
     return JsonResponse({'success': True, 'id': category.id, 'slug': category.slug})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["PATCH", "PUT"])
 def api_category_update(request, category_id):
@@ -1189,7 +1203,7 @@ def api_category_update(request, category_id):
     return JsonResponse({'success': True, 'id': category.id})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["DELETE"])
 def api_category_delete(request, category_id):
@@ -1203,7 +1217,7 @@ def api_category_delete(request, category_id):
 
 # ==================== USERS API (create / delete) ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["POST"])
 def api_user_create(request):
@@ -1238,7 +1252,7 @@ def api_user_create(request):
     return JsonResponse({'success': True, 'id': user.id, 'username': user.username})
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 @require_http_methods(["DELETE"])
 def api_user_delete(request, user_id):
@@ -1257,7 +1271,7 @@ def api_user_delete(request, user_id):
 
 # ==================== DASHBOARD API ====================
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_dashboard_charts(request):
     """API: Dashboard chart data."""
@@ -1311,7 +1325,7 @@ def api_dashboard_charts(request):
     })
 
 
-@login_required
+@admin_login_required
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def api_dashboard_recent_orders(request):
     """API: Recent orders for dashboard table."""
