@@ -88,6 +88,8 @@ def admin_register(request):
         user.is_active = is_active
         user.save()
 
+        StaffProfile.objects.get_or_create(user=user, defaults={'role': StaffProfile.Role.SUPERADMIN, 'is_active': True})
+
         AuditLog.objects.create(
             user=request.user,
             action='user_create',
