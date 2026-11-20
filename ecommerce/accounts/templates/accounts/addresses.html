@@ -1,0 +1,28 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}Delivery addresses | Upsteps{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'accounts/account.css' %}">{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'account_profile' %}">My account</a><span>/</span><span>Addresses</span></nav><h1>Your delivery addresses</h1></div></header>
+<main class="account-shell">
+  {% if messages %}{% for message in messages %}<div class="account-alert">{{ message }}</div>{% endfor %}{% endif %}
+  <section class="account-panel">
+    <div class="account-links"><a href="{% url 'account_profile' %}">Back to account</a></div>
+    <h2>Saved addresses</h2>
+    {% for address in addresses %}<article class="account-address">
+      <div class="account-address__top"><strong>{{ address.full_name }}</strong>{% if address.is_default %}<span class="account-badge">Default address</span>{% endif %}</div>
+      <p class="account-muted">{{ address.phone }}<br>{{ address.address_line_1 }}{% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>{{ address.city }}, {{ address.county }}{% if address.postal_code %} {{ address.postal_code }}{% endif %}</p>
+      <div class="account-actions">
+        {% if not address.is_default %}<form class="account-action-form" method="post" action="{% url 'account_address_default' address.pk %}">{% csrf_token %}<button class="button button--outline" type="submit">Set as default</button></form>{% endif %}
+        <form class="account-action-form" method="post" action="{% url 'account_address_delete' address.pk %}">{% csrf_token %}<button class="button button--outline" type="submit">Remove</button></form>
+      </div>
+    </article>{% empty %}<p class="account-muted">You haven't saved a delivery address yet.</p>{% endfor %}
+    <h2>Add an address</h2>
+    <form method="post">{% csrf_token %}
+      <div class="account-grid">{% for field in form %}{% if field.name != 'is_default' %}<div class="account-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="account-errors">{{ error }}</p>{% endfor %}</div>{% endif %}{% endfor %}</div>
+      <label class="account-check">{{ form.is_default }} Set as my default delivery address</label>{% for error in form.is_default.errors %}<p class="account-errors">{{ error }}</p>{% endfor %}
+      <button class="button button--dark" type="submit">Save address</button>
+    </form>
+  </section>
+</main>
+{% endblock %}

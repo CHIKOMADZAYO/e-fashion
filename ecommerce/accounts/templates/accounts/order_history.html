@@ -1,0 +1,36 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}My Orders | Upsteps{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><span>My Orders</span></nav><h1>Order History</h1></div></header>
+<section class="fashion-container order-section">
+  <div class="orders-list" data-order-history>
+    {% if orders %}
+      <table class="order-table">
+        <thead>
+          <tr><th>Order Number</th><th>Date</th><th>Status</th><th>Items</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td><a href="{% url 'account_order_detail' order.order_number %}">{{ order.order_number|slice:"-8:" }}</a></td>
+            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+            <td><span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+            <td>{{ order.items.count }}</td>
+            <td>KSh {{ order.total|floatformat:2 }}</td>
+            <td><a class="view-link" href="{% url 'account_order_detail' order.order_number %}">View details</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-orders" data-orders-empty>
+        <i class="zmdi zmdi-folder"></i>
+        <h2>No orders yet</h2>
+        <p>You haven't placed any orders. Browse the collection and make your first purchase.</p>
+        <a class="button button--dark" href="{% url 'store_page' 'product' %}">Start shopping</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

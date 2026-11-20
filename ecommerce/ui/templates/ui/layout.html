@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#970052">
+  <title>{% block title %}Upsteps — Fashion Store{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'ui/vendor/bootstrap/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/fonts/iconic/css/material-design-iconic-font.min.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/store-header.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/store-footer.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/support-chat.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/fashion-store.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body id="top" class="fashion-site">
+  {% include 'ui/partials/store_header.html' %}
+  <main id="main-content">{% block content %}{% endblock %}</main>
+  {% include 'ui/partials/store_footer.html' %}
+
+  <div class="store-toast" data-store-toast role="status" aria-live="polite"></div>
+  <div class="quick-view" data-quick-view hidden>
+    <button class="quick-view__scrim" type="button" data-quick-close aria-label="Close quick view"></button>
+    <section class="quick-view__dialog" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+      <button class="quick-view__close" type="button" data-quick-close aria-label="Close">&times;</button>
+      <img src="" alt="" data-quick-image>
+      <div class="quick-view__content"><span class="eyebrow">UPSTEPS EDIT</span><h2 id="quick-view-title" data-quick-title></h2><strong data-quick-price></strong><p>Thoughtfully selected for everyday style. Easy to pair, made to wear often.</p><div class="quick-view__actions"><a class="button button--outline" data-quick-link href="#">View product</a><button class="button button--dark" type="button" data-quick-view-add>Add to bag</button></div></div>
+    </section>
+  </div>
+  <script src="{% static 'ui/js/fashion-store.js' %}" defer></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

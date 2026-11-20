@@ -1,0 +1,6 @@
+{% extends 'ui/layout.html' %}
+{% block title %}Your wishlist | Upsteps{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><span>Your wishlist</span></nav><h1>Your saved pieces.</h1></div></header>
+<section class="fashion-container product-section" data-wishlist-page><div class="product-grid" data-wishlist-grid></div><div class="cart-empty" data-wishlist-empty hidden><i class="zmdi zmdi-favorite-outline"></i><h2>Your wishlist is a little quiet.</h2><p>Save the pieces you love and they’ll be here when you come back.</p><a class="button button--dark" href="{% url 'store_page' 'product' %}">Browse the collection</a></div></section>
+{% endblock %}

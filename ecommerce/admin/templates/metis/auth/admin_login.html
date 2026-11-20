@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Sign In &middot; Metis</title>
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" crossorigin href="{% static 'admin/metis/assets/main-G_CDnMN9.css' %}">
+</head>
+<body data-page="login">
+    <div class="auth-layout">
+        <main class="auth-main">
+            <div class="auth-topbar">
+                <a class="auth-brand" href="{% url 'dashboard' %}">
+                    <span>Metis Admin</span>
+                </a>
+            </div>
+
+            <div class="auth-body">
+                <div class="auth-heading">
+                    <h1>Admin Sign In</h1>
+                    <p>Use your staff account to access the dashboard.</p>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 px-3" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <form method="post" class="auth-form" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.username.id_for_label }}">Username or email</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        <div class="invalid-feedback">{{ form.password.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+
+                <div class="auth-divider">or</div>
+
+                <p class="auth-footnote">New here? <a href="{% url 'admin_register' %}">Create an admin account</a></p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

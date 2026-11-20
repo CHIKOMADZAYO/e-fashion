@@ -1,0 +1,24 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}My account | Upsteps{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'accounts/account.css' %}">{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><span>My account</span></nav><h1>Your Upsteps account</h1></div></header>
+<main class="account-shell">
+  {% if messages %}{% for message in messages %}<div class="account-alert">{{ message }}</div>{% endfor %}{% endif %}
+  <section class="account-panel">
+    <div class="account-address__top"><div><h1>Hello, {{ user.first_name|default:user.username }}.</h1><p class="account-lead">Manage your details, delivery addresses, and recent orders.</p></div><form method="post" action="{% url 'account_logout' %}">{% csrf_token %}<button class="button button--outline" type="submit">Sign out</button></form></div>
+    <div class="account-links"><a href="{% url 'account_orders' %}">Order history</a><a href="{% url 'account_addresses' %}">Delivery addresses ({{ address_count }})</a><a href="{% url 'store_page' 'product' %}">Continue shopping</a></div>
+    <h2>Account details</h2>
+    <form method="post">{% csrf_token %}
+      <div class="account-grid">{% for field in details_form %}<div class="account-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="account-errors">{{ error }}</p>{% endfor %}</div>{% endfor %}</div>
+      <h2>Contact and saved delivery details</h2>
+      <div class="account-grid">{% for field in profile_form %}<div class="account-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% for error in field.errors %}<p class="account-errors">{{ error }}</p>{% endfor %}</div>{% endfor %}</div>
+      <button class="button button--dark" type="submit">Save changes</button>
+    </form>
+    <h2>Recent orders</h2>
+    {% if recent_orders %}<div style="overflow-x:auto"><table class="account-orders"><thead><tr><th>Order</th><th>Date</th><th>Status</th><th>Total</th></tr></thead><tbody>{% for order in recent_orders %}<tr><td>{{ order.order_number|truncatechars:14 }}</td><td>{{ order.created_at|date:"M j, Y" }}</td><td>{{ order.get_status_display }}</td><td>KSh {{ order.total|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="account-muted">Orders placed while signed out are not linked automatically. Your account orders will appear here.</p>{% endif %}
+  </section>
+</main>
+{% endblock %}

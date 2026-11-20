@@ -1,0 +1,36 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}Order {{ order.order_number|slice:"-8:" }} | Upsteps{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'account_orders' %}">My Orders</a><span>/</span><span>Order {{ order.order_number|slice:"-8:" }}</span></nav><h1>Order Details</h1></div></header>
+<section class="fashion-container order-detail-section">
+  <div class="order-header">
+    <div><strong>Order number:</strong> {{ order.order_number }}</div>
+    <div><strong>Placed:</strong> {{ order.created_at|date:"M d, Y H:i" }}</div>
+    <div><strong>Status:</strong> <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span></div>
+    <div><strong>Payment:</strong> {{ order.get_payment_method_display }}</div>
+    <div><strong>Delivery:</strong> {{ order.shipping_city }}, {{ order.shipping_county }}</div>
+  </div>
+  <table class="order-items-table">
+    <thead><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Total</th></tr></thead>
+    <tbody>
+      {% for item in order.items.all %}
+      <tr>
+        <td>{{ item.product_name }}<br><small>SKU: {{ item.product_sku }}</small></td>
+        <td>{{ item.quantity }}</td>
+        <td>KSh {{ item.unit_price|floatformat:2 }}</td>
+        <td>KSh {{ item.line_total|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="order-summary">
+    <div class="summary-row"><span>Subtotal</span><strong>KSh {{ order.subtotal|floatformat:2 }}</strong></div>
+    <div class="summary-row"><span>Delivery</span><strong>KSh {{ order.shipping_fee|floatformat:2 }}</strong></div>
+    <div class="summary-row summary-row--total"><span>Total</span><strong>KSh {{ order.total|floatformat:2 }}</strong></div>
+  </div>
+  <div class="order-actions">
+    <a class="button button--outline" href="{% url 'account_orders' %}">Back to orders</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% load static %}
+<footer class="store-footer">
+  <div class="store-footer__main">
+    <div class="store-footer__grid">
+      <section class="store-footer__brand">
+        <a class="store-footer__logo" href="{% url 'home' %}" aria-label="Upsteps home">Upsteps</a>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in nibh vehicula, facilisis magna ut, consectetur lorem. Proin eget tortor risus.</p>
+        <h3>Connect With Us</h3>
+        <div class="store-footer__social">
+          <a href="#facebook" aria-label="Facebook"><i class="fa fa-facebook-official" aria-hidden="true"></i></a>
+          <a href="#instagram" aria-label="Instagram"><i class="fa fa-instagram" aria-hidden="true"></i></a>
+          <a href="#x" aria-label="X"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+          <a href="#tiktok" aria-label="TikTok"><i class="fa fa-music" aria-hidden="true"></i></a>
+          <a href="#pinterest" aria-label="Pinterest"><i class="fa fa-pinterest" aria-hidden="true"></i></a>
+          <a href="#youtube" aria-label="YouTube"><i class="fa fa-youtube-play" aria-hidden="true"></i></a>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="store-footer__heading">Shop</h3>
+        <ul class="store-footer__links">
+          <li><a href="{% url 'store_page' 'product' %}">New Arrivals</a></li>
+          <li><a href="{% url 'store_page' 'product' %}">Bestsellers</a></li>
+          <li><a href="{% url 'store_page' 'product' %}">Women's Clothing</a></li>
+          <li><a href="{% url 'store_page' 'product' %}">Men's Clothing</a></li>
+          <li><a href="{% url 'store_page' 'product' %}">Accessories</a></li>
+          <li><a href="{% url 'store_page' 'product' %}">Sale</a></li>
+        </ul>
+      </section>
+
+      <section>
+        <h3 class="store-footer__heading">Support</h3>
+        <ul class="store-footer__links">
+          <li><a href="{% url 'store_page' 'contact' %}">Help Center</a></li>
+          <li><a href="#order-status">Order Status</a></li>
+          <li><a href="#shipping">Shipping Info</a></li>
+          <li><a href="#returns">Returns &amp; Exchanges</a></li>
+          <li><a href="#size-guide">Size Guide</a></li>
+          <li><a href="{% url 'store_page' 'contact' %}">Contact Us</a></li>
+        </ul>
+      </section>
+
+      <section class="store-footer__contact">
+        <h3 class="store-footer__heading">Contact Information</h3>
+        <p><i class="zmdi zmdi-pin" aria-hidden="true"></i><span>123 Fashion Street, New York, NY 10001</span></p>
+        <p><i class="zmdi zmdi-phone" aria-hidden="true"></i><a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+        <p><i class="zmdi zmdi-email" aria-hidden="true"></i><a href="mailto:hello@example.com">hello@example.com</a></p>
+        <p><i class="zmdi zmdi-time" aria-hidden="true"></i><span>Monday-Friday: 9am-6pm<br>Saturday: 10am-4pm<br>Sunday: Closed</span></p>
+        <div class="store-footer__apps"><a href="#app-store"><i class="fa fa-apple" aria-hidden="true"></i> App Store</a><a href="#google-play"><i class="fa fa-google" aria-hidden="true"></i> Google Play</a></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="store-footer__bottom">
+    <div class="store-footer__bottom-inner">
+      <div class="store-footer__copyright"><span>© Copyright <strong>Upsteps</strong>. All Rights Reserved.</span><span>Designed by <a href="#design">Upsteps</a></span></div>
+      <div class="store-footer__legal">
+        <div class="store-footer__payments" aria-label="Accepted payment methods"><i class="fa fa-cc-visa"></i><i class="fa fa-cc-mastercard"></i><i class="fa fa-cc-paypal"></i><i class="fa fa-cc-amex"></i></div>
+        <a href="#terms">Terms</a><a href="#privacy">Privacy</a><a href="#cookies">Cookies</a>
+      </div>
+    </div>
+  </div>
+  <a class="store-footer__top" href="#top" aria-label="Back to top"><i class="zmdi zmdi-chevron-up" aria-hidden="true"></i></a>
+
+  <div class="support-chat" data-support-chat data-endpoint="{% url 'support_chat' %}">
+    <section class="support-chat__panel" id="support-chat-panel" aria-label="Upsteps AI support chat" hidden>
+      <div class="support-chat__heading">
+        <div><strong>Upsteps Support</strong><span>AI assistant</span></div>
+        <button class="support-chat__close" type="button" data-chat-close aria-label="Close chat">&times;</button>
+      </div>
+      <p class="support-chat__notice">Ask us about shopping, shipping, or returns. Don’t share passwords or payment details.</p>
+      <div class="support-chat__messages" data-chat-messages role="log" aria-live="polite" aria-relevant="additions">
+        <div class="support-chat__message support-chat__message--assistant">Hi! How can I help you today?</div>
+      </div>
+      <form class="support-chat__form" data-chat-form>
+        {% csrf_token %}
+        <label class="visually-hidden" for="support-chat-input">Your message</label>
+        <input id="support-chat-input" name="message" type="text" maxlength="1000" placeholder="Type your message..." autocomplete="off" required>
+        <button type="submit" aria-label="Send message"><i class="zmdi zmdi-mail-send" aria-hidden="true"></i></button>
+      </form>
+      <div class="support-chat__status" data-chat-status role="status" aria-live="polite"></div>
+    </section>
+    <button class="support-chat__toggle" type="button" aria-controls="support-chat-panel" aria-expanded="false" data-chat-toggle>
+      <i class="zmdi zmdi-comment-text" aria-hidden="true"></i><span>AI Support</span>
+    </button>
+  </div>
+</footer>
+<script src="{% static 'ui/js/support-chat.js' %}" defer></script>

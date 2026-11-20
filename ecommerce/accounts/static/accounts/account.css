@@ -1,0 +1,26 @@
+.account-shell { max-width: 980px; margin: 54px auto 80px; padding: 0 18px; }
+.account-panel { background: #fff; border: 1px solid #eee7ec; border-radius: 12px; padding: 28px; box-shadow: 0 12px 35px rgba(42, 16, 33, .05); }
+.account-panel h1, .account-panel h2 { color: #301327; }
+.account-panel h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 38px); }
+.account-panel h2 { margin: 26px 0 16px; font-size: 20px; }
+.account-lead { color: #7d7179; margin: 0 0 24px; }
+.account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.account-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 15px; }
+.account-field label { color: #42363e; font-size: 13px; font-weight: 600; }
+.account-input { width: 100%; min-height: 45px; border: 1px solid #ded6dc; border-radius: 7px; padding: 10px 12px; background: #fff; color: #261b23; }
+.account-input:focus { outline: 2px solid rgba(151, 0, 82, .18); border-color: #970052; }
+.account-check { display: flex; align-items: center; gap: 9px; margin: 12px 0 20px; color: #42363e; font-size: 13px; }
+.account-check .account-input { width: auto; min-height: 0; }
+.account-errors { color: #a3223b; font-size: 12px; margin: 0; }
+.account-alert { border-radius: 7px; padding: 11px 14px; margin-bottom: 16px; background: #f7edf3; color: #573047; }
+.account-links { display: flex; flex-wrap: wrap; gap: 12px 18px; margin: 18px 0 0; }
+.account-links a, .account-inline-link { color: #970052; }
+.account-address { border: 1px solid #eee7ec; border-radius: 9px; padding: 18px; margin: 12px 0; }
+.account-address__top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.account-badge { display: inline-block; border-radius: 20px; background: #f7edf3; color: #970052; padding: 4px 9px; font-size: 11px; }
+.account-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.account-action-form { display: inline; }
+.account-orders { width: 100%; border-collapse: collapse; }
+.account-orders th, .account-orders td { border-bottom: 1px solid #eee7ec; text-align: left; padding: 11px 8px; font-size: 13px; }
+.account-muted { color: #7d7179; }
+@media (max-width: 640px) { .account-panel { padding: 20px; } .account-grid { grid-template-columns: 1fr; gap: 0; } .account-address__top { align-items: flex-start; flex-direction: column; } }

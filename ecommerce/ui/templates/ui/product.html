@@ -1,0 +1,37 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}Shop all | Upsteps{% endblock %}
+{% block content %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><span>Shop</span></nav><h1>Find your new favourite.</h1></div></header>
+<div class="fashion-container shop-layout">
+  <aside class="shop-sidebar" aria-label="Shop filters">
+    <div class="shop-filter"><h2>Category</h2>{% for category in categories %}<label><input type="checkbox" data-category-filter="{{ category.slug }}"{% if selected_category == category.slug %} checked{% endif %}> {{ category.name }}</label>{% empty %}<label><input type="checkbox" data-category-filter="women"> Women</label><label><input type="checkbox" data-category-filter="men"> Men</label><label><input type="checkbox" data-category-filter="accessories"> Accessories</label>{% endfor %}</div>
+    <div class="shop-filter"><h2>Price range</h2><input type="range" min="1500" max="12000" step="250" value="12000" data-price-filter aria-label="Maximum price"><div class="shop-filter__price"><span>KSh 1,500</span><span data-price-maximum>KSh 12,000</span></div></div>
+    <div class="shop-filter"><h2>Availability</h2><p class="filter-note">All pieces shown are currently available.</p></div>
+    <div class="shop-filter"><h2>Style notes</h2><label><input type="checkbox" data-badge-filter="New"> New arrivals</label><label><input type="checkbox" data-badge-filter="Bestseller"> Bestsellers</label></div>
+  </aside>
+  <section>
+    <div class="product-toolbar"><div class="product-toolbar__filters"><button class="filter-chip{% if not selected_category %} is-active{% endif %}" type="button" data-category-chip="all">All pieces</button>{% for category in categories %}<button class="filter-chip{% if selected_category == category.slug %} is-active{% endif %}" type="button" data-category-chip="{{ category.slug }}">{{ category.name }}</button>{% empty %}<button class="filter-chip" type="button" data-category-chip="women">Women</button><button class="filter-chip" type="button" data-category-chip="men">Men</button><button class="filter-chip" type="button" data-category-chip="accessories">Accessories</button>{% endfor %}</div><div><span class="product-count" data-product-count>{% if products %}{{ products|length }}{% else %}16{% endif %} pieces</span> &nbsp; <label class="visually-hidden" for="product-sort">Sort products</label><select id="product-sort" data-product-sort><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></div></div>
+    <div class="product-grid" data-product-search-grid>
+      {% for product in products %}{% include 'ui/partials/product_card.html' with product=product %}{% empty %}
+      {% include 'ui/partials/product_card.html' with id='up-001' image='ui/images/product-01.jpg' title='The Essential Cotton Tee' category='women' category_label='Everyday essentials' price=2163.03 badge='Bestseller' %}
+      {% include 'ui/partials/product_card.html' with id='up-002' image='ui/images/product-04.jpg' title='Relaxed Tailored Shirt' category='women' category_label='New season' price=4589.95 badge='New' %}
+      {% include 'ui/partials/product_card.html' with id='up-003' image='ui/images/product-07.jpg' title='The Weekend Knit' category='women' category_label='Soft layers' price=3314.75 %}
+      {% include 'ui/partials/product_card.html' with id='up-004' image='ui/images/product-09.jpg' title='Everyday Straight-Leg Jean' category='men' category_label='Denim' price=9749.25 badge='Popular' %}
+      {% include 'ui/partials/product_card.html' with id='up-005' image='ui/images/product-11.jpg' title='The City Crossbody' category='accessories' category_label='Accessories' price=4527.95 %}
+      {% include 'ui/partials/product_card.html' with id='up-006' image='ui/images/product-12.jpg' title='Linen Blend Summer Dress' category='women' category_label='Light layers' price=6850.00 badge='New' %}
+      {% include 'ui/partials/product_card.html' with id='up-007' image='ui/images/product-14.jpg' title='Classic Everyday Loafer' category='accessories' category_label='Shoes' price=7799.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-008' image='ui/images/product-16.jpg' title='The Weekend Overshirt' category='men' category_label='Modern classics' price=5980.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-009' image='ui/images/product-02.jpg' title='Soft Cotton Weekend Tee' category='men' category_label='Everyday essentials' price=2499.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-010' image='ui/images/product-03.jpg' title='The Sunday Shirt' category='women' category_label='New season' price=4290.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-011' image='ui/images/product-05.jpg' title='The Soft Knit Cardigan' category='women' category_label='Soft layers' price=6490.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-012' image='ui/images/product-06.jpg' title='Everyday Leather Belt' category='accessories' category_label='Accessories' price=1990.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-013' image='ui/images/product-08.jpg' title='The Weekend Shirt Dress' category='women' category_label='Light layers' price=6990.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-014' image='ui/images/product-10.jpg' title='Classic Low-Top Sneaker' category='accessories' category_label='Shoes' price=5890.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-015' image='ui/images/product-13.jpg' title='Relaxed Tapered Trouser' category='men' category_label='Modern classics' price=5190.00 %}
+      {% include 'ui/partials/product_card.html' with id='up-016' image='ui/images/product-15.jpg' title='The Everyday Tote' category='accessories' category_label='Accessories' price=3290.00 %}
+      {% endfor %}
+    </div><p class="empty-filter" data-empty-filter hidden>No pieces match those filters. Try changing your selection.</p>
+  </section>
+</div>
+{% endblock %}

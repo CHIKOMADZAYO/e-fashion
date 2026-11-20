@@ -1,0 +1,158 @@
+{% extends 'metis/layouts/dashboard.html' %}
+{% load static %}
+
+{% block title %}Audit Logs - Modern Bootstrap Admin{% endblock %}
+{% block page_id %}audit-logs{% endblock %}
+{% block body_class %}audit-logs{% endblock %}
+{% block content %}
+
+<div class="container-fluid p-4 p-lg-4">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mb-lg-4">
+        <div>
+            <h1 class="h3 mb-0">Audit Logs</h1>
+            <p class="text-muted mb-0">Track administrative actions and system changes</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary" @click="exportLogs()">
+                <i class="bi bi-download me-2"></i>Export
+            </button>
+        </div>
+    </div>
+
+    <!-- Audit Logs Container -->
+    <div x-data="auditLogTable" x-init="init()">
+        
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body p-3 p-lg-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small">Action</label>
+                        <select class="form-select form-select-sm" x-model="actionFilter" @change="filterLogs()">
+                            <option value="">All Actions</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="product_create">Product Created</option>
+                            <option value="product_update">Product Updated</option>
+                            <option value="product_delete">Product Deleted</option>
+                            <option value="order_status_change">Order Status Changed</option>
+                            <option value="user_update">User Updated</option>
+                            <option value="settings_update">Settings Updated</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Model</label>
+                        <select class="form-select form-select-sm" x-model="modelFilter" @change="filterLogs()">
+                            <option value="">All Models</option>
+                            <option value="staff_profile">Staff Profile</option>
+                            <option value="product">Product</option>
+                            <option value="order">Order</option>
+                            <option value="user">User</option>
+                            <option value="site_settings">Site Settings</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small">Date Range</label>
+                        <select class="form-select form-select-sm" x-model="dateFilter" @change="filterLogs()">
+                            <option value="">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th @click="sortBy('createdAt')" class="sortable">Date & Time</th>
+                                <th @click="sortBy('user')" class="sortable">User</th>
+                                <th @click="sortBy('action')" class="sortable">Action</th>
+                                <th @click="sortBy('modelName')" class="sortable">Model</th>
+                                <th>Object</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="log in paginatedLogs" :key="log.id">
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium" x-text="formatDateTime(log.createdAt)"></div>
+                                        <small class="text-muted" x-text="timeAgo(log.createdAt)"></small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar-sm me-2" x-text="log.user.charAt(0).toUpperCase()"></div>
+                                            <div>
+                                                <div class="fw-medium" x-text="log.user"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge" :class="actionBadgeClass(log.action)" x-text="formatAction(log.action)"></span>
+                                    </td>
+                                    <td x-text="log.modelName"></td>
+                                    <td>
+                                        <div class="fw-medium" x-text="log.objectRepr"></div>
+                                        <small class="text-muted" x-text="log.objectId"></small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-secondary" @click="showDetails(log)">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr x-show="expandedLog === log.id" x-transition>
+                                    <td colspan="6" class="bg-light p-4">
+                                        <pre class="mb-0 small" x-text="JSON.stringify(log.details, null, 2)"></pre>
+                                    </td>
+                                </tr>
+                            </template>
+                            <tr x-show="filteredLogs.length === 0">
+                                <td colspan="6" class="text-center py-5 text-muted">No audit logs found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                    <div class="text-muted">
+                        Showing <span x-text="(currentPage - 1) * itemsPerPage + 1"></span> to 
+                        <span x-text="Math.min(currentPage * itemsPerPage, filteredLogs.length)"></span> of 
+                        <span x-text="filteredLogs.length"></span> results
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
+                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">Previous</a>
+                            </li>
+                            <template x-for="(page, index) in visiblePages" :key="`page-${index}`">
+                                <li class="page-item" :class="{ 'active': page === currentPage }">
+                                    <a class="page-link" href="#" @click.prevent="page !== '...' && goToPage(page)" x-text="page"></a>
+                                </li>
+                            </template>
+                            <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
+                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+    <script type="module" src="{% static 'admin/metis/assets/audit-log.js' %}"></script>
+
+{% endblock %}

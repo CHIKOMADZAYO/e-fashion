@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin Account &middot; Metis</title>
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" crossorigin href="{% static 'admin/metis/assets/main-G_CDnMN9.css' %}">
+</head>
+<body data-page="register">
+    <div class="auth-layout">
+        <main class="auth-main">
+            <div class="auth-topbar">
+                <a class="auth-brand" href="{% url 'dashboard' %}">
+                    <span>Metis Admin</span>
+                </a>
+            </div>
+
+            <div class="auth-body">
+                <div class="auth-heading">
+                    <h1>Create Admin Account</h1>
+                    <p>Set up your staff access to the dashboard.</p>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 px-3" role="alert">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <form method="post" class="auth-form" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">{{ form.username.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.first_name.id_for_label }}">First name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                        <div class="invalid-feedback">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.last_name.id_for_label }}">Last name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                        <div class="invalid-feedback">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                        <div class="invalid-feedback">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                        <div class="invalid-feedback">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
+                        {{ form.role }}
+                        {% if form.role.errors %}
+                        <div class="invalid-feedback">{{ form.role.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Create account</button>
+                </form>
+
+                <div class="auth-divider">or</div>
+
+                <p class="auth-footnote">Already have an account? <a href="{% url 'admin_login' %}">Sign in</a></p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

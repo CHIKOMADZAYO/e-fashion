@@ -1,0 +1,16 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}Create account | Upsteps{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'accounts/account.css' %}">{% endblock %}
+{% block content %}
+<main class="account-shell"><section class="account-panel" style="max-width:620px;margin:auto">
+  <h1>Create your account.</h1><p class="account-lead">Save delivery details and keep your orders together.</p>
+  <form method="post">{% csrf_token %}{% if form.non_field_errors %}<div class="account-alert">{{ form.non_field_errors }}</div>{% endif %}
+    <div class="account-grid">
+      {% for field in form %}<div class="account-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.help_text %}<span class="account-muted">{{ field.help_text|safe }}</span>{% endif %}{% for error in field.errors %}<p class="account-errors">{{ error }}</p>{% endfor %}</div>{% endfor %}
+    </div>
+    <button class="button button--dark" type="submit">Create account</button>
+  </form>
+  <p class="account-muted" style="margin-top:20px">Already have an account? <a class="account-inline-link" href="{% url 'account_login' %}">Sign in</a></p>
+</section></main>
+{% endblock %}

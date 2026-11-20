@@ -1,0 +1,38 @@
+{% load static %}
+{% if product %}
+  {% with image_url=product.image %}
+  <article class="product-card reveal" data-product-card data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-name="{{ product.name }}" data-category="{{ product.category.slug|default:'other' }}" data-price="{{ product.price }}" data-badge="{% if product.is_featured %}Featured{% endif %}" data-image="{% if '://' in image_url %}{{ image_url }}{% else %}{% static image_url %}{% endif %}">
+    <div class="product-card__visual">
+      <a href="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" class="product-card__image-link" aria-label="View {{ product.name }}">
+        <img src="{% if '://' in image_url %}{{ image_url }}{% else %}{% static image_url %}{% endif %}" alt="{{ product.name }}" loading="lazy">
+      </a>
+      {% if product.is_featured %}<span class="product-card__badge">Featured</span>{% endif %}
+      <button class="product-card__wish" type="button" data-wishlist-toggle aria-label="Add {{ product.name }} to wishlist"><i class="fa fa-heart-o" aria-hidden="true"></i></button>
+      <button class="product-card__quick" type="button" data-quick-open>Quick view</button>
+    </div>
+    <div class="product-card__info">
+      <div><a class="product-card__name" href="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}">{{ product.name }}</a><span class="product-card__category">{{ product.category.name|default:'Upsteps collection' }}</span></div>
+      <strong class="product-card__price">KSh {{ product.price|floatformat:2 }}</strong>
+    </div>
+    <div class="product-card__meta"><span>{% if product.in_stock %}In stock{% else %}Out of stock{% endif %}</span></div>
+    {% if product.in_stock %}<button class="product-card__add" type="button" data-add-to-cart>Add to bag <i class="zmdi zmdi-arrow-right" aria-hidden="true"></i></button>{% else %}<button class="product-card__add" type="button" disabled>Sold out</button>{% endif %}
+  </article>
+  {% endwith %}
+{% else %}
+  <article class="product-card reveal" data-product-card data-product-id="{{ id }}" data-name="{{ title }}" data-category="{{ category }}" data-price="{{ price }}" data-badge="{{ badge }}" data-image="{% static image %}">
+    <div class="product-card__visual">
+      <a href="{% url 'store_page' 'product-detail' %}?product={{ id }}" class="product-card__image-link" aria-label="View {{ title }}">
+        <img src="{% static image %}" alt="{{ title }}" loading="lazy">
+      </a>
+      {% if badge %}<span class="product-card__badge">{{ badge }}</span>{% endif %}
+      <button class="product-card__wish" type="button" data-wishlist-toggle aria-label="Add {{ title }} to wishlist"><i class="fa fa-heart-o" aria-hidden="true"></i></button>
+      <button class="product-card__quick" type="button" data-quick-open>Quick view</button>
+    </div>
+    <div class="product-card__info">
+      <div><a class="product-card__name" href="{% url 'store_page' 'product-detail' %}?product={{ id }}">{{ title }}</a><span class="product-card__category">{{ category_label }}</span></div>
+      <strong class="product-card__price">KSh {{ price|floatformat:2 }}</strong>
+    </div>
+    <div class="product-card__meta"><span class="product-card__stars" aria-label="Rated 4.8 out of 5">★★★★★</span><span>4.8 <small>(24)</small></span></div>
+    <button class="product-card__add" type="button" data-add-to-cart>Add to bag <i class="zmdi zmdi-arrow-right" aria-hidden="true"></i></button>
+  </article>
+{% endif %}

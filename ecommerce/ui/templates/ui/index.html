@@ -1,0 +1,133 @@
+{% extends 'ui/layout.html' %}
+{% load static %}
+{% block title %}Upsteps | New Season, New Style{% endblock %}
+{% block content %}
+<section class="fashion-hero" data-hero-slider aria-label="Featured collections">
+  <article class="fashion-hero__slide is-active" data-hero-slide>
+    <div class="fashion-hero__copy"><span class="eyebrow">The new season edit</span>
+      <h1>Style that feels like you.</h1>
+      <p>Thoughtful wardrobe staples and standout pieces for wherever the day takes you.</p><a
+        class="button button--dark" href="{% url 'store_page' 'product' %}">Shop the collection <i
+          class="zmdi zmdi-arrow-right"></i></a>
+    </div><img class="fashion-hero__art" src="{% static 'ui/images/banner-01.jpg' %}"
+      alt="Model wearing the latest Upsteps collection">
+  </article>
+  <article class="fashion-hero__slide" data-hero-slide>
+    <div class="fashion-hero__copy"><span class="eyebrow">Made for the everyday</span>
+      <h1>Find your forever favourites.</h1>
+      <p>Easy layers, considered details, and a little something new to love.</p><a class="button button--dark"
+        href="{% url 'store_page' 'product' %}?category=women">Explore womenswear <i
+          class="zmdi zmdi-arrow-right"></i></a>
+    </div><img class="fashion-hero__art" src="{% static 'ui/images/banner-02.jpg' %}"
+      alt="Upsteps womenswear collection">
+  </article>
+  <article class="fashion-hero__slide" data-hero-slide>
+    <div class="fashion-hero__copy"><span class="eyebrow">A little more you</span>
+      <h1>Good pieces. Great days.</h1>
+      <p>Fresh fits and timeless textures, picked to make getting dressed simple.</p><a class="button button--dark"
+        href="{% url 'store_page' 'product' %}?category=accessories">Shop accessories <i
+          class="zmdi zmdi-arrow-right"></i></a>
+    </div><img class="fashion-hero__art" src="{% static 'ui/images/banner-03.jpg' %}"
+      alt="Upsteps seasonal accessories">
+  </article>
+  <article class="fashion-hero__slide" data-hero-slide>
+    <div class="fashion-hero__copy"><span class="eyebrow">Secure payments</span>
+      <h1>Pay with M-Pesa.</h1>
+      <p>Fast, safe mobile money checkout on every order.</p><a class="button button--dark"
+        href="{% url 'store_page' 'product' %}">Shop now <i class="zmdi zmdi-arrow-right"></i></a>
+    </div><img class="fashion-hero__art" src="{% static 'ui/images/Mpesa.png' %}"
+      alt="M-Pesa mobile money payment">
+  </article>
+  <div class="fashion-hero__dots" aria-label="Choose a featured slide"><button class="is-active" type="button"
+      data-hero-dot="0" aria-label="Slide 1"></button><button type="button" data-hero-dot="1"
+      aria-label="Slide 2"></button><button type="button" data-hero-dot="2" aria-label="Slide 3"></button><button
+      type="button" data-hero-dot="3" aria-label="Slide 4"></button></div>
+  <button class="fashion-hero__arrow fashion-hero__arrow--prev" type="button" data-hero-prev
+    aria-label="Previous slide"><i class="zmdi zmdi-chevron-left"></i></button><button
+    class="fashion-hero__arrow fashion-hero__arrow--next" type="button" data-hero-next aria-label="Next slide"><i
+      class="zmdi zmdi-chevron-right"></i></button>
+</section>
+<section class="fashion-categories fashion-container">
+  <div class="section-heading">
+    <div><span class="eyebrow">Made for your every day</span>
+      <h2>Find your kind of style</h2>
+    </div><a class="text-link" href="{% url 'store_page' 'product' %}">Explore all categories <i
+        class="zmdi zmdi-arrow-right"></i></a>
+  </div>
+  <div class="category-grid">
+    <article class="category-card"><img src="{% static 'ui/images/banner-04.jpg' %}" alt="Women's new season fashion"
+        loading="lazy">
+      <div class="category-card__copy"><span>01 / New season</span>
+        <h3>Women</h3><a href="{% url 'store_page' 'product' %}?category=women">Shop womenswear</a>
+      </div>
+    </article>
+    <article class="category-card"><img src="{% static 'ui/images/banner-05.jpg' %}" alt="Men's collection"
+        loading="lazy">
+      <div class="category-card__copy"><span>02 / The essentials</span>
+        <h3>Men</h3><a href="{% url 'store_page' 'product' %}?category=men">Shop menswear</a>
+      </div>
+    </article>
+    <article class="category-card"><img src="{% static 'ui/images/banner-06.jpg' %}" alt="Accessories for every look"
+        loading="lazy">
+      <div class="category-card__copy"><span>03 / The finishing touch</span>
+        <h3>Accessories</h3><a href="{% url 'store_page' 'product' %}?category=accessories">Shop accessories</a>
+      </div>
+    </article>
+  </div>
+</section>
+<section class="product-section fashion-container">
+  <div class="section-heading">
+    <div><span class="eyebrow">Curated for you</span>
+      <h2>Most loved right now</h2>
+    </div><a class="text-link" href="{% url 'store_page' 'product' %}">Shop all pieces <i
+        class="zmdi zmdi-arrow-right"></i></a>
+  </div>
+  <div class="product-grid" data-product-search-grid>
+    {% for product in featured_products %}{% include 'ui/partials/product_card.html' with product=product %}{% empty %}
+    {% include 'ui/partials/product_card.html' with id='up-001' image='ui/images/product-01.jpg' title='The Essential
+    Cotton Tee' category='women' category_label='Everyday essentials' price=2163.03 badge='Bestseller' %}
+    {% include 'ui/partials/product_card.html' with id='up-002' image='ui/images/product-04.jpg' title='Relaxed Tailored
+    Shirt' category='women' category_label='New season' price=4589.95 badge='New' %}
+    {% include 'ui/partials/product_card.html' with id='up-003' image='ui/images/product-07.jpg' title='The Weekend
+    Knit' category='women' category_label='Soft layers' price=3314.75 %}
+    {% include 'ui/partials/product_card.html' with id='up-004' image='ui/images/product-09.jpg' title='Everyday
+    Straight-Leg Jean' category='men' category_label='Denim' price=9749.25 badge='Popular' %}
+    {% include 'ui/partials/product_card.html' with id='up-005' image='ui/images/product-11.jpg' title='The City
+    Crossbody' category='accessories' category_label='Accessories' price=4527.95 %}
+    {% include 'ui/partials/product_card.html' with id='up-006' image='ui/images/product-12.jpg' title='Linen Blend
+    Summer Dress' category='women' category_label='Light layers' price=6850.00 badge='New' %}
+    {% include 'ui/partials/product_card.html' with id='up-007' image='ui/images/product-14.jpg' title='Classic Everyday
+    Loafer' category='accessories' category_label='Shoes' price=7799.00 %}
+    {% include 'ui/partials/product_card.html' with id='up-008' image='ui/images/product-16.jpg' title='The Weekend
+    Overshirt' category='men' category_label='Modern classics' price=5980.00 %}
+    {% endfor %}
+  </div>
+</section>
+<section class="fashion-promo fashion-container reveal"><img class="fashion-promo__image"
+    src="{% static 'ui/images/banner-07.jpg' %}" alt="Upsteps seasonal style edit" loading="lazy">
+  <div class="fashion-promo__copy"><span class="eyebrow">A better kind of wardrobe</span>
+    <h2>Good style should feel effortless.</h2>
+    <p>Meet the pieces that work harder, wear longer, and make the everyday a little more special.</p><a
+      class="button button--outline" href="{% url 'store_page' 'about' %}">Our approach <i
+        class="zmdi zmdi-arrow-right"></i></a>
+  </div>
+</section>
+<section class="service-strip fashion-container" aria-label="Store benefits">
+  <div class="service-strip__item"><i class="zmdi zmdi-truck"></i>
+    <div><strong>Complimentary delivery</strong><span>On orders over KSh 6,499.50</span></div>
+  </div>
+  <div class="service-strip__item"><i class="zmdi zmdi-refresh"></i>
+    <div><strong>Easy returns</strong><span>Changed your mind? We can help.</span></div>
+  </div>
+  <div class="service-strip__item"><i class="zmdi zmdi-lock-outline"></i>
+    <div><strong>Secure checkout</strong><span>Shop with confidence, every time.</span></div>
+  </div>
+</section>
+<section class="newsletter"><span class="eyebrow">The Upsteps note</span>
+  <h2>A little good news, now and then.</h2>
+  <p>Get new arrivals, thoughtful edits, and 10% off your first order.</p>
+  <form data-newsletter-form><label class="visually-hidden" for="newsletter-email">Email address</label><input
+      id="newsletter-email" type="email" placeholder="Your email address" required><button type="submit">Join the
+      list</button></form>
+</section>
+{% endblock %}
