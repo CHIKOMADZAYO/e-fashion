@@ -468,11 +468,18 @@
     filterCards();
   }
 
+  const searchToggle = document.querySelector('[data-search-toggle]');
   const searchForm = document.querySelector('[data-search-form]');
-  const searchInput = searchForm?.querySelector('input[type="search"]');
+  const searchInput = searchForm?.querySelector('[data-search-input]');
   const suggestions = searchForm?.querySelector('[data-search-suggestions]');
-  if (searchInput && suggestions) {
+  if (searchToggle && searchForm && searchInput && suggestions) {
     const productUrl = searchForm.action;
+    const openSearch = () => { searchForm.classList.add('is-open'); searchToggle.setAttribute('aria-expanded', 'true'); searchInput.focus(); };
+    const closeSearch = () => { searchForm.classList.remove('is-open'); searchToggle.setAttribute('aria-expanded', 'false'); suggestions.hidden = true; };
+    searchToggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (searchForm.classList.contains('is-open')) closeSearch(); else openSearch();
+    });
     const showSuggestions = () => {
       const query = searchInput.value.trim().toLowerCase();
       suggestions.replaceChildren();
@@ -491,7 +498,15 @@
     };
     searchInput.addEventListener('input', showSuggestions);
     searchInput.addEventListener('focus', showSuggestions);
-    document.addEventListener('click', (event) => { if (!searchForm.contains(event.target)) suggestions.hidden = true; });
+    searchForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const query = searchInput.value.trim();
+      if (query) window.location.href = `${productUrl}?q=${encodeURIComponent(query)}`;
+      closeSearch();
+    });
+    document.addEventListener('click', (event) => {
+      if (!searchForm.contains(event.target) && !searchToggle.contains(event.target)) closeSearch();
+    });
     document.addEventListener('click', (event) => {
       const accountWrap = event.target.closest('.store-header__dropdown');
       const hasTrigger = accountWrap && (accountWrap.querySelector('[data-account-toggle]') || accountWrap.querySelector('[data-megamenu-toggle]'));
@@ -499,11 +514,6 @@
         document.querySelectorAll('.store-header__dropdown.is-open').forEach((d) => { d.classList.remove('is-open'); });
         document.querySelectorAll('[data-account-toggle]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
       }
-    });
-    searchForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const query = searchInput.value.trim();
-      window.location.href = `${productUrl}?q=${encodeURIComponent(query)}`;
     });
   }
 

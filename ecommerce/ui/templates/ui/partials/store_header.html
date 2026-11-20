@@ -34,9 +34,17 @@
         </div>
       </nav>
       <div class="store-header__actions">
-        <button class="store-header__search-toggle" type="button" aria-label="Search" data-search-toggle>
-          <i class="zmdi zmdi-search" aria-hidden="true"></i>
-        </button>
+        <div class="store-header__search-wrap">
+          <button class="store-header__search-toggle" type="button" aria-label="Search" aria-expanded="false" data-search-toggle>
+            <i class="zmdi zmdi-search" aria-hidden="true"></i>
+          </button>
+          <form class="store-header__search-form" action="{% url 'store_page' 'product' %}" method="get" role="search" data-search-form>
+            <label class="visually-hidden" for="store-search">Search products</label>
+            <input id="store-search" type="search" name="q" placeholder="Search for products..." data-search-input>
+            <button type="submit" aria-label="Search"><i class="zmdi zmdi-search" aria-hidden="true"></i></button>
+            <div class="store-search-suggestions" data-search-suggestions hidden></div>
+          </form>
+        </div>
         <div class="store-header__dropdown">
           <button class="store-header__account" type="button" aria-expanded="false" aria-label="Account menu" data-account-toggle>
             <i class="zmdi zmdi-account-o" aria-hidden="true"></i>
