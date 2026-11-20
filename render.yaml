@@ -12,7 +12,7 @@ services:
       - key: DEBUG
         value: "False"
       - key: ALLOWED_HOSTS
-        value: "*.onrender.com"
+        value: "*"
       - key: MPESA_ENVIRONMENT
         value: "sandbox"
       - key: MPESA_CONSUMER_KEY
