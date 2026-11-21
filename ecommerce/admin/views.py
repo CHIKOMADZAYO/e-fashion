@@ -27,7 +27,7 @@ def admin_login_required(view_func):
 
 
 def admin_login(request):
-    if request.user.is_authenticated and StaffProfile.objects.filter(user=request.user, is_active=True).exists():
+    if request.user.is_authenticated and hasattr(request.user, 'staff_profile') and request.user.staff_profile.is_active:
         return redirect('dashboard')
 
     if request.method == 'POST':
