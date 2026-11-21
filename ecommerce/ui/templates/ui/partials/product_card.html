@@ -19,10 +19,10 @@
   </article>
   {% endwith %}
   {% else %}
-  <article class="product-card reveal" data-product-card data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-name="{{ product.name }}" data-category="{{ product.category.slug|default:'other' }}" data-price="{{ product.price }}" data-badge="{% if product.is_featured %}Featured{% endif %}" data-image="{% static 'ui/images/product-placeholder.jpg' %}">
+  <article class="product-card reveal" data-product-card data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-name="{{ product.name }}" data-category="{{ product.category.slug|default:'other' }}" data-price="{{ product.price }}" data-badge="{% if product.is_featured %}Featured{% endif %}" data-image="{% static 'ui/images/product-01.jpg' %}">
     <div class="product-card__visual">
       <a href="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" class="product-card__image-link" aria-label="View {{ product.name }}">
-        <img src="{% static 'ui/images/product-placeholder.jpg' %}" alt="{{ product.name }}" loading="lazy">
+        <img src="{% static 'ui/images/product-01.jpg' %}" alt="{{ product.name }}" loading="lazy">
       </a>
       {% if product.is_featured %}<span class="product-card__badge">Featured</span>{% endif %}
       <button class="product-card__wish" type="button" data-wishlist-toggle aria-label="Add {{ product.name }} to wishlist"><i class="fa fa-heart-o" aria-hidden="true"></i></button>

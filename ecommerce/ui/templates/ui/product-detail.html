@@ -9,8 +9,8 @@
   <div class="detail-gallery"><div class="detail-gallery__main"><img src="{{ image_url }}" alt="{{ product.name }}" data-gallery-main></div></div>
 {% else %}
 <header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'store_page' 'product' %}">Shop</a><span>/</span><span>{{ product.name }}</span></nav></div></header>
-<section class="fashion-container detail-layout" data-detail-product data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{% static 'ui/images/product-placeholder.jpg' %}">
-  <div class="detail-gallery"><div class="detail-gallery__main"><img src="{% static 'ui/images/product-placeholder.jpg' %}" alt="{{ product.name }}" data-gallery-main></div></div>
+<section class="fashion-container detail-layout" data-detail-product data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{% static 'ui/images/product-01.jpg' %}">
+  <div class="detail-gallery"><div class="detail-gallery__main"><img src="{% static 'ui/images/product-01.jpg' %}" alt="{{ product.name }}" data-gallery-main></div></div>
 {% endif %}
 {% endwith %}
   <div class="detail-info"><span class="eyebrow">UPSTEPS EDIT{% if product.is_featured %} / FEATURED{% endif %}</span><h1 data-detail-title>{{ product.name }}</h1><strong class="detail-info__price" data-detail-price>KSh {{ product.price|floatformat:2 }}</strong><p class="detail-info__description">{{ product.description|default:'A considered Upsteps piece, selected for everyday style and made to wear often.' }}</p>
