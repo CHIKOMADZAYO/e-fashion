@@ -36,7 +36,7 @@ if not SECRET_KEY and DEBUG:
 elif not SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured("SECRET_KEY environment variable is required in production")
 
-ALLOWED_HOSTS =['.vercel.app']
+ALLOWED_HOSTS =['.vercel.app','localhost']
 
 # Application definition
 
