@@ -16,4 +16,4 @@ urllib3==2.8.0
 whitenoise==6.9.0
 vercel-wsgi==1.0.0
 boto3==1.37.0
-django-storages[s3]==1.15.0
+django-storages
