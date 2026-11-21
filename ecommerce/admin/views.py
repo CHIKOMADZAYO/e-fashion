@@ -108,7 +108,7 @@ def admin_register(request):
     return render(request, 'metis/auth/admin_register.html', {'form': form})
 
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET", "POST"])
 def admin_logout(request):
     if request.user.is_authenticated:
         user = request.user
@@ -120,7 +120,7 @@ def admin_logout(request):
             details={'ip': request.META.get('REMOTE_ADDR', '')}
         )
     logout(request)
-    return redirect('login')
+    return redirect('admin_login')
 
 
 @admin_login_required
