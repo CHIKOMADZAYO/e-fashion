@@ -44,6 +44,14 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('is-visible'), 2500);
   };
+  const setButtonLoading = (button, loading) => {
+    if (!button) return;
+    button.disabled = loading;
+    button.setAttribute('aria-busy', String(loading));
+    const original = button.dataset.buttonOriginalText || button.textContent.trim();
+    if (loading && !button.dataset.buttonOriginalText) button.dataset.buttonOriginalText = original;
+    button.textContent = loading ? 'Working…' : (button.dataset.buttonOriginalText || original);
+  };
   const loadStoreState = async () => {
     try {
       const response = await fetch('/api/store-state/', { credentials: 'same-origin' });
@@ -105,26 +113,28 @@
       button?.setAttribute('aria-pressed', String(active));
     });
   };
-  const addToCart = async (product, quantity = 1) => {
+  const addToCart = async (product, quantity = 1, triggerButton = null) => {
+    if (triggerButton) setButtonLoading(triggerButton, true);
     try {
       const result = await apiPost('/api/cart/add/', { product_id: product.id, quantity });
       cartItems = result.cart.items;
       updateBadges(); renderCart(); renderCheckoutSummary();
       showToast(`${result.product_name} added to your bag`);
     } catch (error) { showToast(error.message); }
+    finally { if (triggerButton) setButtonLoading(triggerButton, false); }
   };
 
   document.addEventListener('click', (event) => {
     const addButton = event.target.closest('[data-add-to-cart]');
     if (addButton) {
       const card = addButton.closest('[data-product-card]');
-      if (card) addToCart(getProductFromCard(card));
+      if (card) addToCart(getProductFromCard(card), 1, addButton);
     }
     const detailAddButton = event.target.closest('[data-detail-add]');
     if (detailAddButton) {
       const detail = detailAddButton.closest('[data-detail-product]');
       const quantity = Number(document.querySelector('[data-detail-quantity]')?.value || 1);
-      if (detail) addToCart({ id: detail.dataset.productId, slug: detail.dataset.productSlug, product_url: detail.dataset.productUrl, name: detail.dataset.productName, price: Number(detail.dataset.productPrice), image: detail.dataset.productImage }, quantity);
+      if (detail) addToCart({ id: detail.dataset.productId, slug: detail.dataset.productSlug, product_url: detail.dataset.productUrl, name: detail.dataset.productName, price: Number(detail.dataset.productPrice), image: detail.dataset.productImage }, quantity, detailAddButton);
     }
 
     const wishlistButton = event.target.closest('[data-wishlist-toggle]');
@@ -178,14 +188,17 @@
 
     const removeButton = event.target.closest('[data-cart-remove]');
     if (removeButton) {
+      setButtonLoading(removeButton, true);
       apiPost('/api/cart/remove/', { product_id: removeButton.dataset.cartRemove }).then((result) => {
         cartItems = result.cart.items; renderCart(); renderCheckoutSummary(); updateBadges();
-      }).catch((error) => showToast(error.message));
+      }).catch((error) => showToast(error.message)).finally(() => setButtonLoading(removeButton, false));
     }
     if (event.target.closest('[data-clear-cart]')) {
+      const clearBtn = event.target.closest('[data-clear-cart]');
+      setButtonLoading(clearBtn, true);
       apiPost('/api/cart/clear/').then((result) => {
         cartItems = result.cart.items; renderCart(); renderCheckoutSummary(); updateBadges();
-      }).catch((error) => showToast(error.message));
+      }).catch((error) => showToast(error.message)).finally(() => setButtonLoading(clearBtn, false));
     }
 
     const accountToggle = event.target.closest('[data-account-toggle]');
@@ -236,7 +249,7 @@
     if (quickView) quickView.hidden = true;
     document.body.classList.remove('dialog-open');
   };
-  quickView?.querySelector('[data-quick-view-add]')?.addEventListener('click', () => quickProduct && addToCart(quickProduct));
+  quickView?.querySelector('[data-quick-view-add]')?.addEventListener('click', () => quickProduct && addToCart(quickProduct, 1, quickView?.querySelector('[data-quick-view-add]')));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeQuickView(); });
 
   const renderCart = () => {
@@ -280,10 +293,11 @@
     if (!quantity) return;
     const item = cartItems.find((product) => product.id === quantity.dataset.cartId);
     if (!item) return;
+    setButtonLoading(quantity, true);
     const nextQuantity = Math.max(1, Math.min(Number(item.stock_quantity || 10), Number(item.quantity) + Number(quantity.dataset.cartQty)));
     apiPost('/api/cart/update/', { product_id: item.id, quantity: nextQuantity }).then((result) => {
       cartItems = result.cart.items; renderCart(); renderCheckoutSummary(); updateBadges();
-    }).catch((error) => showToast(error.message));
+    }).catch((error) => showToast(error.message)).finally(() => setButtonLoading(quantity, false));
   });
 
   const renderCheckoutSummary = () => {

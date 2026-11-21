@@ -32,6 +32,17 @@
       {% include 'ui/partials/product_card.html' with id='up-016' image='ui/images/product-15.jpg' title='The Everyday Tote' category='accessories' category_label='Accessories' price=3290.00 %}
       {% endfor %}
     </div><p class="empty-filter" data-empty-filter hidden>No pieces match those filters. Try changing your selection.</p>
+    {% if products_page.has_other_pages %}
+    <nav class="pagination" aria-label="Product pages">
+      {% if products_page.has_previous %}
+        <a href="?page={{ products_page.previous_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="pagination__link pagination__link--prev">Previous</a>
+      {% endif %}
+      <span class="pagination__current">Page {{ products_page.number }} of {{ products_page.paginator.num_pages }}</span>
+      {% if products_page.has_next %}
+        <a href="?page={{ products_page.next_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" class="pagination__link pagination__link--next">Next</a>
+      {% endif %}
+    </nav>
+    {% endif %}
   </section>
 </div>
 {% endblock %}
