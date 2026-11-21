@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import StaffProfile, SiteSettings, AuditLog
-from .forms import AdminLoginForm
+from .forms import AdminLoginForm, AdminRegisterForm
 
 
 def admin_login_required(view_func):
@@ -62,47 +62,34 @@ def admin_login(request):
     return render(request, 'metis/auth/admin_login.html', {'form': form, 'next': request.GET.get('next', '')})
 
 
-@admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def admin_register(request):
     """Admin: Register a new staff user."""
-    from django.contrib.auth import get_user_model
-    from django import forms
-
     User = get_user_model()
 
     if request.method == 'POST':
-        username = (request.POST.get('username') or '').strip()
-        email = (request.POST.get('email') or '').strip()
-        password = request.POST.get('password', '')
-        first_name = (request.POST.get('first_name') or '').strip()
-        last_name = (request.POST.get('last_name') or '').strip()
-        is_staff = request.POST.get('is_staff') == 'on'
-        is_active = request.POST.get('is_active') == 'on'
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('admin_login')}?next={request.path}")
+        if not StaffProfile.objects.filter(user=request.user, is_active=True).exists():
+            return JsonResponse({'success': False, 'errors': {'non_field': ['Staff access required.']}}, status=403)
 
-        errors = {}
-        if not username:
-            errors['username'] = 'Username is required.'
-        if User.objects.filter(username=username).exists():
-            errors['username'] = 'Username already exists.'
-        if not email:
-            errors['email'] = 'Email is required.'
-        if User.objects.filter(email=email).exists():
-            errors['email'] = 'Email already exists.'
-        if not password:
-            errors['password'] = 'Password is required.'
+        form = AdminRegisterForm(request.POST)
+        if not form.is_valid():
+            return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
 
-        if errors:
-            return JsonResponse({'success': False, 'errors': errors}, status=400)
+        cd = form.cleaned_data
+        if User.objects.filter(username=cd['username']).exists():
+            return JsonResponse({'success': False, 'errors': {'username': ['Username already exists.']}}, status=400)
+        if User.objects.filter(email=cd['email']).exists():
+            return JsonResponse({'success': False, 'errors': {'email': ['Email already exists.']}}, status=400)
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.first_name = first_name
-        user.last_name = last_name
-        user.is_staff = is_staff
-        user.is_active = is_active
+        user = User.objects.create_user(username=cd['username'], email=cd['email'], password=cd['password1'])
+        user.first_name = cd.get('first_name', '')
+        user.last_name = cd.get('last_name', '')
+        user.is_staff = True
+        user.is_active = True
         user.save()
 
-        StaffProfile.objects.get_or_create(user=user, defaults={'role': StaffProfile.Role.SUPERADMIN, 'is_active': True})
+        StaffProfile.objects.get_or_create(user=user, defaults={'role': cd['role'], 'is_active': True})
 
         AuditLog.objects.create(
             user=request.user,
@@ -114,7 +101,8 @@ def admin_register(request):
 
         return JsonResponse({'success': True, 'id': user.id, 'username': user.username})
 
-    return render(request, 'metis/auth/admin_register.html')
+    form = AdminRegisterForm()
+    return render(request, 'metis/auth/admin_register.html', {'form': form})
 
 
 @require_http_methods(["POST"])

@@ -7,6 +7,11 @@
     <title>Create Admin Account &middot; Metis</title>
     <meta name="theme-color" content="#2563eb">
     <link rel="stylesheet" crossorigin href="{% static 'admin/metis/assets/main-G_CDnMN9.css' %}">
+  <script type="module" crossorigin src="{% static 'admin/metis/assets/main-BNn7gkAv.js' %}"></script>
+  <script type="module" crossorigin src="{% static 'admin/metis/assets/rolldown-runtime-XKyaHtl9.js' %}"></script>
+  <script type="module" crossorigin src="{% static 'admin/metis/assets/vendor-ui-Bygqz38G.js' %}"></script>
+  <script type="module" crossorigin src="{% static 'admin/metis/assets/password-strength-CR79XtXF.js' %}"></script>
+  <script type="module" crossorigin src="{% static 'admin/metis/assets/auth-B1r5dJZc.js' %}"></script>
 </head>
 <body data-page="register">
     <div class="auth-layout">
@@ -29,7 +34,7 @@
                 </div>
                 {% endif %}
 
-                <form method="post" class="auth-form" novalidate>
+                <form method="post" class="auth-form" novalidate id="adminRegisterForm">
                     {% csrf_token %}
 
                     <div class="mb-3">
@@ -97,5 +102,69 @@
             </div>
         </main>
     </div>
+
+    <script>
+      (() => {
+        const form = document.getElementById('adminRegisterForm');
+        if (!form) return;
+        const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const btn = form.querySelector('button[type="submit"]');
+          const originalText = btn.textContent;
+          btn.textContent = 'Creating...';
+          btn.disabled = true;
+
+          // Clear previous errors
+          form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+          form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+          const formData = new FormData(form);
+          const payload = {};
+          for (const [key, value] of formData.entries()) {
+            if (key !== 'csrfmiddlewaretoken') payload[key] = value;
+          }
+
+          try {
+            const response = await fetch(form.action, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfInput ? csrfInput.value : '',
+              },
+              body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+              btn.textContent = 'Created! Redirecting...';
+              window.location.href = '{% url "dashboard" %}';
+            } else {
+              const errors = data.errors || {};
+              if (errors.non_field) {
+                const div = document.createElement('div');
+                div.className = 'alert alert-danger py-2 px-3';
+                div.textContent = Array.isArray(errors.non_field) ? errors.non_field[0] : errors.non_field;
+                form.prepend(div);
+              }
+              for (const [field, msgs] of Object.entries(errors)) {
+                if (field === 'non_field') continue;
+                const input = form.querySelector(`[name="${field}"]`);
+                if (input) {
+                  input.classList.add('is-invalid');
+                  const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+                  const feedback = input.parentElement.querySelector('.invalid-feedback');
+                  if (feedback) feedback.textContent = msg;
+                }
+              }
+            }
+          } catch (error) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+          } finally {
+            if (!btn.disabled) btn.textContent = originalText;
+          }
+        });
+      })();
+    </script>
 </body>
 </html>
