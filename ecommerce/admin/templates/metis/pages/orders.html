@@ -254,19 +254,9 @@
                                                 </td>
                                                 <td class="fw-medium">{{ settings.currency }} {{ order.total|floatformat:2 }}</td>
                                                 <td>
-                                                    <form method="post" action="{% url 'api_order_update_status' order.order_number %}" class="d-inline" onsubmit="return updateOrderStatus(this, '{{ order.order_number }}');">
-                                                        {% csrf_token %}
-                                                        <select name="status" class="form-select form-select-sm status-select" data-order="{{ order.order_number }}">
-                                                            <option value="{{ order.status }}"{% if order.status == 'pending' %} selected{% endif %}>Pending</option>
-                                                            <option value="confirmed"{% if order.status == 'confirmed' %} selected{% endif %}>Confirmed</option>
-                                                            <option value="processing"{% if order.status == 'processing' %} selected{% endif %}>Processing</option>
-                                                            <option value="shipped"{% if order.status == 'shipped' %} selected{% endif %}>Shipped</option>
-                                                            <option value="delivered"{% if order.status == 'delivered' %} selected{% endif %}>Delivered</option>
-                                                            <option value="cancelled"{% if order.status == 'cancelled' %} selected{% endif %}>Cancelled</option>
-                                                        </select>
-                                                        <button type="submit" class="btn btn-sm btn-outline-primary ms-1 update-status-btn" data-order="{{ order.order_number }}" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;">Update</button>
-                                                        <span class="status-msg status-msg-{{ order.order_number|slice:"-8:" }}" style="font-size: 0.75rem; margin-left: 4px;"></span>
-                                                    </form>
+                                                    <span class="badge bg-{{ order.status == 'delivered' and 'success' or order.status == 'pending' and 'warning' or order.status == 'cancelled' and 'danger' or order.status == 'processing' and 'info' or 'primary' }}">
+                                                        {{ order.status|title }}
+                                                    </span>
                                                 </td>
                                                 <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
                                                 <td>
@@ -281,11 +271,14 @@
                                                             <li><a class="dropdown-item" href="{% url 'track_order' %}?order_number={{ order.order_number }}">
                                                                 <i class="bi bi-truck me-2"></i>Track Order
                                                             </a></li>
-                                                            {% if order.status == 'pending' %}
-                                                            <li><a class="dropdown-item text-warning" href="#" onclick="confirmOrder('{{ order.order_number }}', this)">
-                                                                <i class="bi bi-check-circle me-2"></i>Mark as Confirmed
-                                                            </a></li>
-                                                            {% endif %}
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><h6 class="dropdown-header">Change Status</h6></li>
+                                                            <li><a class="dropdown-item {% if order.status == 'pending' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'pending', this)">Pending</a></li>
+                                                            <li><a class="dropdown-item {% if order.status == 'confirmed' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'confirmed', this)">Confirmed</a></li>
+                                                            <li><a class="dropdown-item {% if order.status == 'processing' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'processing', this)">Processing</a></li>
+                                                            <li><a class="dropdown-item {% if order.status == 'shipped' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'shipped', this)">Shipped</a></li>
+                                                            <li><a class="dropdown-item {% if order.status == 'delivered' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'delivered', this)">Delivered</a></li>
+                                                            <li><a class="dropdown-item text-danger {% if order.status == 'cancelled' %}text-muted{% endif %}" href="#" onclick="updateOrderStatusDropdown('{{ order.order_number }}', 'cancelled', this)">Cancelled</a></li>
                                                             <li><hr class="dropdown-divider"></li>
                                                             <li><a class="dropdown-item text-danger" href="#" onclick="cancelOrder('{{ order.order_number }}', this)">
                                                                 <i class="bi bi-x-circle me-2"></i>Cancel Order
@@ -513,6 +506,38 @@
                 btn.textContent = originalText;
                 btn.disabled = false;
                 alert(data.error || 'Failed to cancel order.');
+            }
+        } catch (e) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+            alert('Network error.');
+        }
+    }
+
+    async function updateOrderStatusDropdown(orderNumber, newStatus, link) {
+        event.preventDefault();
+        const btn = link;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Updating…';
+
+        try {
+            const response = await fetch(`/admin/api/orders/${orderNumber}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            const data = await response.json();
+            if (response.ok && data.success) {
+                btn.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1) + ' ✓';
+                setTimeout(() => location.reload(), 800);
+            } else {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                alert(data.error || 'Failed to update status.');
             }
         } catch (e) {
             btn.textContent = originalText;
