@@ -280,6 +280,7 @@ def order_detail(request, order_number):
 @user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
 def products(request):
     from ecommerce.ui.models import Product, Category
+    from django.db.models import Sum
 
     products_list = Product.objects.all().order_by('-created_at')
     categories = Category.objects.all()
@@ -288,10 +289,23 @@ def products(request):
     if category_id:
         products_list = products_list.filter(category_id=category_id)
 
+    # Stats
+    total_products = Product.objects.count()
+    in_stock = Product.objects.filter(stock_quantity__gt=0).count()
+    low_stock = Product.objects.filter(stock_quantity__lte=10, stock_quantity__gt=0).count()
+    total_value = sum(
+        float(p.price) * p.stock_quantity
+        for p in Product.objects.filter(is_active=True)
+    )
+
     context = {
         'products': products_list,
         'categories': categories,
         'selected_category': int(category_id) if category_id else 0,
+        'total_products': total_products,
+        'in_stock': in_stock,
+        'low_stock': low_stock,
+        'total_value': total_value,
     }
     return render(request, 'metis/pages/products.html', context)
 

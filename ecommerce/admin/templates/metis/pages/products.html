@@ -28,7 +28,7 @@
                     </div>
 
                     <!-- Product Management Container -->
-                    <div x-data="productTable" x-init="init()">
+                    <div>
                         
                         <!-- Product Stats Widgets -->
                         <div class="row g-4 g-lg-4 mb-5">
@@ -41,9 +41,9 @@
                                             </div>
                                             <div>
                                                 <p class="h6 mb-0 text-muted">Total Products</p>
-                                                <div class="h3 mb-0" aria-live="polite"><span x-text="stats.total"></span></div>
+                                                <div class="h3 mb-0" aria-live="polite">{{ total_products }}</div>
                                                 <small class="text-success-emphasis">
-                                                    <i class="bi bi-arrow-up"></i> +5% from last month
+                                                    <i class="bi bi-box"></i> Products in catalog
                                                 </small>
                                             </div>
                                         </div>
@@ -59,9 +59,9 @@
                                             </div>
                                             <div>
                                                 <p class="h6 mb-0 text-muted">In Stock</p>
-                                                <div class="h3 mb-0" aria-live="polite"><span x-text="stats.inStock"></span></div>
+                                                <div class="h3 mb-0" aria-live="polite">{{ in_stock }}</div>
                                                 <small class="text-success-emphasis">
-                                                    <i class="bi bi-arrow-up"></i> Well stocked
+                                                    <i class="bi bi-check-circle"></i> Products available
                                                 </small>
                                             </div>
                                         </div>
@@ -77,9 +77,9 @@
                                             </div>
                                             <div>
                                                 <p class="h6 mb-0 text-muted">Low Stock</p>
-                                                <div class="h3 mb-0" aria-live="polite"><span x-text="stats.lowStock"></span></div>
+                                                <div class="h3 mb-0" aria-live="polite">{{ low_stock }}</div>
                                                 <small class="text-warning">
-                                                    <i class="bi bi-exclamation-circle"></i> Needs attention
+                                                    <i class="bi bi-exclamation-circle"></i> Below threshold
                                                 </small>
                                             </div>
                                         </div>
@@ -95,7 +95,7 @@
                                             </div>
                                             <div>
                                                 <p class="h6 mb-0 text-muted">Total Value</p>
-                                                <div class="h3 mb-0" aria-live="polite"><span x-text="`$${stats.totalValue.toLocaleString()}`"></span></div>
+                                                <div class="h3 mb-0" aria-live="polite">{{ settings.currency }} {{ total_value|floatformat:2 }}</div>
                                                 <small class="text-info">
                                                     <i class="bi bi-info-circle"></i> Inventory value
                                                 </small>
@@ -166,28 +166,23 @@
                                                 <input type="search" 
                                                        class="form-control form-control-sm" 
                                                        placeholder="Search products..."
-                                                       x-model="searchQuery"
-                                                       @input="filterProducts()"
                                                        style="width: 200px;">
                                                 <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-2 text-muted"></i>
                                             </div>
                                             
                                             <!-- Category Filter -->
                                             <select class="form-select form-select-sm" 
-                                                    x-model="categoryFilter" 
-                                                    @change="filterProducts()"
                                                     style="width: 150px;">
                                                 <option value="">All Categories</option>
-                                                <option value="electronics">Electronics</option>
-                                                <option value="clothing">Clothing</option>
-                                                <option value="books">Books</option>
-                                                <option value="home">Home & Garden</option>
+                                                {% for category in categories %}
+                                                <option value="{{ category.id }}" {% if category.id == selected_category %}selected{% endif %}>
+                                                    {{ category.name }}
+                                                </option>
+                                                {% endfor %}
                                             </select>
                                             
                                             <!-- Stock Filter -->
                                             <select class="form-select form-select-sm" 
-                                                    x-model="stockFilter" 
-                                                    @change="filterProducts()"
                                                     style="width: 150px;">
                                                 <option value="">All Stock</option>
                                                 <option value="in-stock">In Stock</option>
@@ -197,117 +192,84 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <!-- Bulk Actions Bar -->
-                                <div class="bulk-actions-bar p-3 bg-light border-bottom" x-show="selectedProducts.length > 0" x-transition>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">
-                                            <span x-text="selectedProducts.length"></span> product(s) selected
-                                        </span>
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-sm btn-outline-secondary" @click="bulkAction('publish')">
-                                                <i class="bi bi-eye me-1"></i>Publish
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary" @click="bulkAction('unpublish')">
-                                                <i class="bi bi-eye-slash me-1"></i>Unpublish
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger" @click="bulkAction('delete')">
-                                                <i class="bi bi-trash me-1"></i>Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Table -->
+                                <div class="card-body p-0">
+                                    <!-- Table -->
                                 <div class="table-responsive">
                                     <table class="table table-hover mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 40px;">
-                                                    <input type="checkbox" 
-                                                           class="form-check-input" 
-                                                           @change="toggleAll($event.target.checked)"
-                                                           :checked="selectedProducts.length === filteredProducts.length && filteredProducts.length > 0">
-                                                </th>
                                                 <th>Product</th>
-                                                <th @click="sortBy('category')" class="sortable">Category</th>
-                                                <th @click="sortBy('price')" class="sortable">Price</th>
-                                                <th @click="sortBy('stock')" class="sortable">Stock</th>
+                                                <th>Category</th>
+                                                <th>Price</th>
+                                                <th>Stock</th>
                                                 <th>Status</th>
-                                                <th @click="sortBy('created')" class="sortable">Created</th>
+                                                <th>Created</th>
                                                 <th style="width: 120px;">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <template x-for="product in paginatedProducts" :key="product.id">
-                                                <tr>
-                                                    <td>
-                                                        <input type="checkbox" 
-                                                               class="form-check-input" 
-                                                               :value="product.id"
-                                                               x-model="selectedProducts">
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center">
-                                                            <img :src="product.image" 
-                                                                 class="product-image me-3" 
-                                                                 :alt="product.name">
-                                                            <div>
-                                                                <div class="fw-medium" x-text="product.name"></div>
-                                                                <small class="text-muted" x-text="'SKU: ' + product.sku"></small>
-                                                            </div>
+                                            {% for product in products %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        {% if product.image %}
+                                                        <img src="{{ product.image }}" class="product-image me-3" alt="{{ product.name }}" style="width: 40px; height: 40px; object-fit: cover;">
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="fw-medium">{{ product.name }}</div>
+                                                            <small class="text-muted">SKU: {{ product.sku }}</small>
                                                         </div>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge bg-light text-dark" x-text="product.category"></span>
-                                                    </td>
-                                                    <td x-text="`$${product.price}`"></td>
-                                                    <td>
-                                                        <span class="badge stock-badge" 
-                                                              :class="{
-                                                                  'in-stock': product.stock > 20,
-                                                                  'low-stock': product.stock > 0 && product.stock <= 20,
-                                                                  'out-of-stock': product.stock === 0
-                                                              }"
-                                                              x-text="product.stock + ' units'"></span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="badge" 
-                                                              :class="{
-                                                                  'bg-success': product.status === 'published',
-                                                                  'bg-secondary': product.status === 'draft',
-                                                                  'bg-warning': product.status === 'pending'
-                                                              }"
-                                                              x-text="product.status"></span>
-                                                    </td>
-                                                    <td x-text="product.created"></td>
-                                                    <td>
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                                    type="button" 
-                                                                    data-bs-toggle="dropdown">
-                                                                <i class="bi bi-three-dots"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu">
-                                                                <li><a class="dropdown-item" href="#" @click="editProduct(product)">
-                                                                    <i class="bi bi-pencil me-2"></i>Edit
-                                                                </a></li>
-                                                                <li><a class="dropdown-item" href="#" @click="viewProduct(product)">
-                                                                    <i class="bi bi-eye me-2"></i>View Details
-                                                                </a></li>
-                                                                <li><a class="dropdown-item" href="#" @click="duplicateProduct(product)">
-                                                                    <i class="bi bi-copy me-2"></i>Duplicate
-                                                                </a></li>
-                                                                <li><hr class="dropdown-divider"></li>
-                                                                <li><a class="dropdown-item text-danger" href="#" @click="deleteProduct(product)">
-                                                                    <i class="bi bi-trash me-2"></i>Delete
-                                                                </a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </template>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-light text-dark">{{ product.category.name|default:'Uncategorized' }}</span>
+                                                </td>
+                                                <td class="fw-medium">{{ settings.currency }} {{ product.price|floatformat:2 }}</td>
+                                                <td>
+                                                    {% if product.stock_quantity > 20 %}
+                                                    <span class="badge bg-success">{{ product.stock_quantity }} units</span>
+                                                    {% elif product.stock_quantity > 0 %}
+                                                    <span class="badge bg-warning">{{ product.stock_quantity }} units</span>
+                                                    {% else %}
+                                                    <span class="badge bg-danger">Out of stock</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if product.is_active %}
+                                                    <span class="badge bg-success">Published</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">Draft</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ product.created_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                            <i class="bi bi-three-dots"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item" href="#" onclick="editProduct('{{ product.id }}', this)">
+                                                                <i class="bi bi-pencil me-2"></i>Edit
+                                                            </a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="viewProduct('{{ product.id }}', this)">
+                                                                <i class="bi bi-eye me-2"></i>View Details
+                                                            </a></li>
+                                                            <li><a class="dropdown-item" href="#" onclick="duplicateProduct('{{ product.id }}', this)">
+                                                                <i class="bi bi-copy me-2"></i>Duplicate
+                                                            </a></li>
+                                                            <li><hr class="dropdown-divider"></li>
+                                                            <li><a class="dropdown-item text-danger" href="#" onclick="deleteProduct('{{ product.id }}', this)">
+                                                                <i class="bi bi-trash me-2"></i>Delete
+                                                            </a></li>
+                                                        </ul>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4 text-muted">No products found.</td>
+                                            </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
