@@ -411,17 +411,15 @@
       pendingMpesaOrder = result.order_number;
       cartItems = [];
       renderCart(); renderCheckoutSummary(); updateBadges();
-      document.querySelector('[data-checkout-success] h2').textContent = `Thank you — order ${result.order_number.slice(0, 8)} is recorded.`;
-      document.querySelector('[data-checkout-success] p').textContent = `Your order is pending. Total: ${money(result.total)}. Payment has not been collected.`;
+      const orderNumber = result.order_number;
+      document.querySelector('[data-checkout-success] h2').textContent = `Thank you — order ${orderNumber.slice(0, 8)} is recorded.`;
+      document.querySelector('[data-checkout-success] p').textContent = `Redirecting to your order confirmation…`;
       document.querySelector('[data-checkout-success]').hidden = false;
       const trackLink = document.querySelector('[data-track-link]');
-      if (trackLink) trackLink.href = `/track-order/?order_number=${encodeURIComponent(result.order_number)}`;
-      if (paymentMethod === 'mpesa') {
-        await startMpesaPayment(result.order_number);
-      } else {
-        setCheckoutMessage(`Thank you - order ${result.order_number.slice(0, 8)} is recorded.`, `Your order is pending. Total: ${money(result.total)}. Payment is due on delivery.`);
-      }
-      submitButton.hidden = true;
+      if (trackLink) trackLink.href = `/track-order/?order_number=${encodeURIComponent(orderNumber)}`;
+      setTimeout(() => {
+        window.location.href = `/order-confirmation/${orderNumber}/`;
+      }, 1200);
     } catch (error) {
       showToast(error.message);
       submitButton.disabled = false;

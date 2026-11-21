@@ -10,7 +10,7 @@ from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
 from django.http import Http404, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -373,11 +373,28 @@ def checkout_submit(request):
     except Exception:
         pass
 
+    _send_order_confirmation_email(order)
+
     return JsonResponse({
         "order_number": str(order.order_number),
         "total": str(order.total),
         "status": order.get_status_display(),
     })
+
+
+def _send_order_confirmation_email(order):
+    """Best-effort email order confirmation; never breaks checkout."""
+    from django.core.mail import EmailMessage
+    from django.template.loader import render_to_string
+    try:
+        subject = f"Your Upsteps order #{str(order.order_number)[:8]} is confirmed"
+        body = render_to_string("emails/order_confirmation.html", {"order": order})
+        EmailMessage(
+            subject, body,
+            to=[order.customer_email],
+        ).send(fail_silently=True)
+    except Exception:
+        pass
 
 
 def track_order(request):
@@ -415,8 +432,20 @@ def track_order(request):
     })
 
 
+def order_confirmation(request, order_number):
+    """Order confirmation page shown after checkout."""
+    order = get_object_or_404(Order.objects.prefetch_related("items__product"), order_number=order_number)
+    if order.user and order.user != request.user:
+        raise Http404("Order not found.")
+    if order.session_key and not request.user.is_authenticated:
+        if order.session_key != (request.session.session_key or ""):
+            raise Http404("Order not found.")
+    return render(request, "ui/order-confirmation.html", {"order": order})
+
+
 @require_POST
 def support_chat(request):
+    rate_key = f"support_chat:{request.META.get('REMOTE_ADDR', 'unknown')}"
     client_ip = request.META.get('REMOTE_ADDR', 'unknown')
     if cache.add(rate_key, 1, timeout=60):
         request_count = 1

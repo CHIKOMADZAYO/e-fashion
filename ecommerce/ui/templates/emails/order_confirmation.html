@@ -1,0 +1,29 @@
+{% autoescape off %}
+Hello {{ order.customer_name }},
+
+Thank you for shopping with Upsteps. Your order has been recorded.
+
+Order number: {{ order.order_number }}
+Status: {{ order.get_status_display }}
+Total: KSh {{ order.total|floatformat:2 }}
+Payment method: {{ order.get_payment_method_display }}
+Placed: {{ order.created_at|date:"M d, Y h:i A" }}
+
+Your items:
+{% for item in order.items.all %}
+- {{ item.product_name }} × {{ item.quantity }} — KSh {{ item.unit_price|floatformat:2 }}
+{% endfor %}
+
+Shipping to:
+{{ order.customer_name }}
+{{ order.shipping_address_line_1 }}
+{% if order.shipping_address_line_2 %}{{ order.shipping_address_line_2 }}
+{% endif %}{{ order.shipping_city }}, {{ order.shipping_county }}
+
+Track your order:
+{{ order.get_absolute_url }}
+
+If you have any questions, reply to this email or contact hello@example.com.
+
+— Upsteps
+{% endautoescape %}

@@ -189,6 +189,10 @@ class Order(models.Model):
     def __str__(self):
         return f"Order {self.order_number}"
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('order_confirmation', args=[str(self.order_number)])
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")

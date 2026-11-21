@@ -11,9 +11,16 @@
     <div class="shop-filter"><h2>Style notes</h2><label><input type="checkbox" data-badge-filter="New"> New arrivals</label><label><input type="checkbox" data-badge-filter="Bestseller"> Bestsellers</label></div>
   </aside>
   <section>
-    <div class="product-toolbar"><div class="product-toolbar__filters"><button class="filter-chip{% if not selected_category %} is-active{% endif %}" type="button" data-category-chip="all">All pieces</button>{% for category in categories %}<button class="filter-chip{% if selected_category == category.slug %} is-active{% endif %}" type="button" data-category-chip="{{ category.slug }}">{{ category.name }}</button>{% empty %}<button class="filter-chip" type="button" data-category-chip="women">Women</button><button class="filter-chip" type="button" data-category-chip="men">Men</button><button class="filter-chip" type="button" data-category-chip="accessories">Accessories</button>{% endfor %}</div><div><span class="product-count" data-product-count>{% if products %}{{ products|length }}{% else %}16{% endif %} pieces</span> &nbsp; <label class="visually-hidden" for="product-sort">Sort products</label><select id="product-sort" data-product-sort><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></div></div>
+    <div class="product-toolbar"><div class="product-toolbar__filters"><button class="filter-chip{% if not selected_category %} is-active{% endif %}" type="button" data-category-chip="all">All pieces</button>{% for category in categories %}<button class="filter-chip{% if selected_category == category.slug %} is-active{% endif %}" type="button" data-category-chip="{{ category.slug }}">{{ category.name }}</button>{% empty %}<button class="filter-chip" type="button" data-category-chip="women">Women</button><button class="filter-chip" type="button" data-category-chip="men">Men</button><button class="filter-chip" type="button" data-category-chip="accessories">Accessories</button>{% endfor %}</div><div><span class="product-count" data-product-count>{% if products %}{{ products|length }}{% elif search_query or selected_category %}0{% else %}16{% endif %} pieces</span> &nbsp; <label class="visually-hidden" for="product-sort">Sort products</label><select id="product-sort" data-product-sort><option value="featured">Featured</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name: A to Z</option></select></div></div>
     <div class="product-grid" data-product-search-grid>
       {% for product in products %}{% include 'ui/partials/product_card.html' with product=product %}{% empty %}
+      {% if search_query or selected_category %}
+      <div class="empty-state" style="grid-column:1/-1;text-align:center;padding:40px;color:#897f87;">
+        <p>No pieces match your selection.</p>
+        {% if search_query %}<p>Try a different keyword for "{{ search_query }}".</p>{% endif %}
+        {% if selected_category %}<a href="{% url 'store_page' 'product' %}" class="text-link">Clear filters</a>{% endif %}
+      </div>
+      {% else %}
       {% include 'ui/partials/product_card.html' with id='up-001' image='ui/images/product-01.jpg' title='The Essential Cotton Tee' category='women' category_label='Everyday essentials' price=2163.03 badge='Bestseller' %}
       {% include 'ui/partials/product_card.html' with id='up-002' image='ui/images/product-04.jpg' title='Relaxed Tailored Shirt' category='women' category_label='New season' price=4589.95 badge='New' %}
       {% include 'ui/partials/product_card.html' with id='up-003' image='ui/images/product-07.jpg' title='The Weekend Knit' category='women' category_label='Soft layers' price=3314.75 %}
@@ -30,6 +37,7 @@
       {% include 'ui/partials/product_card.html' with id='up-014' image='ui/images/product-10.jpg' title='Classic Low-Top Sneaker' category='accessories' category_label='Shoes' price=5890.00 %}
       {% include 'ui/partials/product_card.html' with id='up-015' image='ui/images/product-13.jpg' title='Relaxed Tapered Trouser' category='men' category_label='Modern classics' price=5190.00 %}
       {% include 'ui/partials/product_card.html' with id='up-016' image='ui/images/product-15.jpg' title='The Everyday Tote' category='accessories' category_label='Accessories' price=3290.00 %}
+      {% endif %}
       {% endfor %}
     </div><p class="empty-filter" data-empty-filter hidden>No pieces match those filters. Try changing your selection.</p>
     {% if products_page.has_other_pages %}

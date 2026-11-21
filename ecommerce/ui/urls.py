@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/wishlist/toggle/', views.wishlist_toggle, name='wishlist_toggle'),
     path('api/checkout/', views.checkout_submit, name='checkout_submit'),
     path('track-order/', views.track_order, name='track_order'),
+    path('order-confirmation/<uuid:order_number>/', views.order_confirmation, name='order_confirmation'),
     path('support-chat/', views.support_chat, name='support_chat'),
     path('<slug:page>/', views.store_page, name='store_page'),
 ]
