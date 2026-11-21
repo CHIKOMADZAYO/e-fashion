@@ -84,16 +84,17 @@ def admin_register(request):
         user.is_active = True
         user.save()
 
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
         StaffProfile.objects.get_or_create(user=user, defaults={'role': cd['role'], 'is_active': True})
 
         login(request, user)
 
         AuditLog.objects.create(
-            user=request.user,
+            user=request.user if request.user.is_authenticated else None,
             action='user_create',
             model_name='user',
             object_repr=f'User: {user.username}',
-            details={'created_by': request.user.username},
+            details={'created_by': request.user.username if request.user.is_authenticated else 'system'},
         )
 
         return JsonResponse({'success': True, 'id': user.id, 'username': user.username})
@@ -114,7 +115,7 @@ def admin_logout(request):
             details={'ip': request.META.get('REMOTE_ADDR', '')}
         )
     logout(request)
-    return redirect('admin_login')
+    return redirect('login')
 
 
 @admin_login_required
