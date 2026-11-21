@@ -36,9 +36,9 @@ if not SECRET_KEY and DEBUG:
 elif not SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured("SECRET_KEY environment variable is required in production")
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.vercel.app').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://*.vercel.app').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://estore-3vj1.onrender.com').split(',')
 
 
 # Application definition
@@ -157,23 +157,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media files (user uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-# S3-compatible storage for media on Vercel (read-only filesystem)
-USE_S3 = os.environ.get('USE_S3', 'False').lower() == 'true'
-if USE_S3:
-    INSTALLED_APPS.append('storages')
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
-    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
-    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL', None)
-    AWS_DEFAULT_ACL = None
-    AWS_S3_FILE_OVERWRITE = False
-    AWS_S3_VERIFY = True
-    if AWS_S3_ENDPOINT_URL:
-        AWS_S3_USE_SSL = AWS_S3_ENDPOINT_URL.startswith('https://')
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/' if not AWS_S3_ENDPOINT_URL else AWS_S3_ENDPOINT_URL + '/'
 
 # WhiteNoise additional settings
 WHITENOISE_MAX_AGE = 31536000  # 1 year
