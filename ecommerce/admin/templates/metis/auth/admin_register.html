@@ -127,7 +127,7 @@
 
           try {
             const response = await fetch(form.action, {
-              method: 'POST',
+              method: 'POST', credentials: 'same-origin',
               headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfInput ? csrfInput.value : '',
