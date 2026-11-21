@@ -201,24 +201,25 @@ document.addEventListener('alpine:init', () => {
             const required = ['name', 'sku', 'category', 'price', 'stock', 'status'];
             if (required.some(f => !form[f])) { alert('Please fill in all required fields'); return; }
             try {
-                const payload = {
-                    name: form.name,
-                    sku: form.sku,
-                    description: form.description || '',
-                    price: parseFloat(form.price) || 0,
-                    stock_quantity: parseInt(form.stock) || 0,
-                    is_active: form.status === 'published',
-                    image: form.image || ''
-                };
-                if (this.editingProduct) {
-                    await fetch(`/admin/api/products/${this.editingProduct.id}/update/`, {
-                        method: 'PATCH', headers: jsonHeaders(), body: JSON.stringify(payload)
-                    });
-                } else {
-                    await fetch('/admin/api/products/create/', {
-                        method: 'POST', headers: jsonHeaders(), body: JSON.stringify(payload)
-                    });
+                const formData = new FormData();
+                formData.append('name', form.name);
+                formData.append('sku', form.sku);
+                formData.append('description', form.description || '');
+                formData.append('price', parseFloat(form.price) || 0);
+                formData.append('stock_quantity', parseInt(form.stock) || 0);
+                formData.append('is_active', form.status === 'published');
+                if (form.image instanceof File) {
+                    formData.append('image', form.image);
+                } else if (form.image) {
+                    formData.append('image', form.image);
                 }
+                const url = this.editingProduct ? `/admin/api/products/${this.editingProduct.id}/update/` : '/admin/api/products/create/';
+                const method = this.editingProduct ? 'PATCH' : 'POST';
+                const headers = { 'X-CSRFToken': getCsrfToken() };
+                if (!(form.image instanceof File)) {
+                    headers['Accept'] = 'application/json';
+                }
+                await fetch(url, { method, headers, body: formData });
                 this.editingProduct = null;
                 await this.fetchProducts();
                 this.filterProducts();
@@ -308,18 +309,28 @@ document.addEventListener('alpine:init', () => {
             const required = ['name', 'sku', 'category', 'price', 'stock', 'status'];
             if (required.some(f => !this.form[f])) { alert('Please fill in all required fields'); return; }
             try {
-                const payload = {
-                    name: this.form.name, sku: this.form.sku, description: this.form.description || '',
-                    price: parseFloat(this.form.price) || 0,
-                    stock_quantity: parseInt(this.form.stock) || 0,
-                    is_active: this.form.status === 'published',
-                    image: this.form.image || ''
-                };
+                const formData = new FormData();
+                formData.append('name', this.form.name);
+                formData.append('sku', this.form.sku);
+                formData.append('description', this.form.description || '');
+                formData.append('price', parseFloat(this.form.price) || 0);
+                formData.append('stock_quantity', parseInt(this.form.stock) || 0);
+                formData.append('is_active', this.form.status === 'published');
+                if (this.form.image instanceof File) {
+                    formData.append('image', this.form.image);
+                } else if (this.form.image) {
+                    formData.append('image', this.form.image);
+                }
                 const url = this.editingId ? `/admin/api/products/${this.editingId}/update/` : '/admin/api/products/create/';
-                await fetch(url, { method: this.editingId ? 'PATCH' : 'POST', headers: jsonHeaders(), body: JSON.stringify(payload) });
+                const method = this.editingId ? 'PATCH' : 'POST';
+                const headers = { 'X-CSRFToken': getCsrfToken() };
+                if (!(this.form.image instanceof File)) {
+                    headers['Accept'] = 'application/json';
+                }
+                await fetch(url, { method, headers, body: formData });
                 const wasEdit = !!this.editingId;
                 this.editingId = null;
-                this.form = { name: '', sku: '', category: '', price: '', stock: '', description: '', status: 'draft', image: '' };
+                this.form = { name: '', sku: '', category: '', price: '', stock: '', description: '', status: 'draft', image: null };
                 const modalEl = document.getElementById('productModal');
                 if (modalEl) hideModal('productModal');
                 window.location.reload();

@@ -30,7 +30,7 @@ class Product(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     sku = models.CharField(max_length=64, unique=True)
     description = models.TextField(blank=True)
-    image = models.CharField(max_length=255, blank=True)
+    image = models.ImageField(upload_to='products/', blank=True, null=True)
     price = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)],
     )

@@ -968,35 +968,41 @@ def api_product_create(request):
     """API: Create product."""
     from ecommerce.ui.models import Product, Category
 
-    try:
-        payload = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    # Support both JSON and multipart/form-data (for file uploads)
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        data = request.POST
+        image_file = request.FILES.get('image')
+    else:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        image_file = None
 
     required_fields = ['name', 'sku', 'price']
     for field in required_fields:
-        if not payload.get(field):
+        if not data.get(field):
             return JsonResponse({'error': f'{field} is required'}, status=400)
 
-    if Product.objects.filter(sku=payload['sku']).exists():
+    if Product.objects.filter(sku=data['sku']).exists():
         return JsonResponse({'error': 'SKU already exists'}, status=400)
 
     category = None
-    if payload.get('category'):
-        category = get_object_or_404(Category, pk=payload['category'])
+    if data.get('category'):
+        category = get_object_or_404(Category, pk=data['category'])
 
     product = Product.objects.create(
-        name=payload['name'],
-        slug=payload['name'].lower().replace(' ', '-')[:200],
-        sku=payload['sku'],
-        description=payload.get('description', ''),
+        name=data['name'],
+        slug=data['name'].lower().replace(' ', '-')[:200],
+        sku=data['sku'],
+        description=data.get('description', ''),
         category=category,
-        price=Decimal(payload['price']),
-        compare_at_price=Decimal(payload['compare_at_price']) if payload.get('compare_at_price') else None,
-        stock_quantity=payload.get('stock_quantity', 0),
-        is_active=payload.get('is_active', True),
-        is_featured=payload.get('is_featured', False),
-        image=payload.get('image', ''),
+        price=Decimal(data['price']),
+        compare_at_price=Decimal(data['compare_at_price']) if data.get('compare_at_price') else None,
+        stock_quantity=data.get('stock_quantity', 0),
+        is_active=data.get('is_active', 'true') == 'true' if isinstance(data.get('is_active'), str) else bool(data.get('is_active', True)),
+        is_featured=data.get('is_featured', 'true') == 'true' if isinstance(data.get('is_featured'), str) else bool(data.get('is_featured', False)),
+        image=image_file,
     )
 
     AuditLog.objects.create(
@@ -1019,34 +1025,39 @@ def api_product_update(request, product_id):
 
     product = get_object_or_404(Product, pk=product_id)
 
-    try:
-        payload = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    # Support both JSON and multipart/form-data (for file uploads)
+    if request.content_type and 'multipart/form-data' in request.content_type:
+        data = request.POST
+        image_file = request.FILES.get('image')
+    else:
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        image_file = None
 
-    if 'sku' in payload and payload['sku'] != product.sku:
-        if Product.objects.filter(sku=payload['sku']).exclude(pk=product_id).exists():
+    if 'sku' in data and data['sku'] != product.sku:
+        if Product.objects.filter(sku=data['sku']).exclude(pk=product_id).exists():
             return JsonResponse({'error': 'SKU already exists'}, status=400)
 
     fields_to_update = []
-    for field in ['name', 'sku', 'description', 'price', 'compare_at_price', 'stock_quantity', 'is_active', 'is_featured', 'image']:
-        if field in payload:
+    for field in ['name', 'sku', 'description', 'price', 'compare_at_price', 'stock_quantity', 'is_active', 'is_featured']:
+        if field in data:
             if field == 'price':
-                setattr(product, field, Decimal(payload[field]))
-            elif field == 'compare_at_price' and payload[field]:
-                setattr(product, field, Decimal(payload[field]))
-            elif field == 'category':
-                if payload[field]:
-                    setattr(product, field, get_object_or_404(Category, pk=payload[field]))
-                else:
-                    setattr(product, field, None)
+                setattr(product, field, Decimal(data[field]))
+            elif field == 'compare_at_price' and data[field]:
+                setattr(product, field, Decimal(data[field]))
             else:
-                setattr(product, field, payload[field])
+                setattr(product, field, data[field])
             fields_to_update.append(field)
 
-    if 'name' in payload:
-        product.slug = payload['name'].lower().replace(' ', '-')[:200]
+    if 'name' in data:
+        product.slug = data['name'].lower().replace(' ', '-')[:200]
         fields_to_update.append('slug')
+
+    if image_file is not None:
+        product.image = image_file
+        fields_to_update.append('image')
 
     if fields_to_update:
         fields_to_update.append('updated_at')
