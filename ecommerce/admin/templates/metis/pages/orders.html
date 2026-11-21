@@ -254,9 +254,19 @@
                                                 </td>
                                                 <td class="fw-medium">{{ settings.currency }} {{ order.total|floatformat:2 }}</td>
                                                 <td>
-                                                    <span class="badge bg-{{ order.status == 'delivered' and 'success' or order.status == 'pending' and 'warning' or order.status == 'cancelled' and 'danger' or order.status == 'processing' and 'info' or 'primary' }}">
-                                                        {{ order.status|title }}
-                                                    </span>
+                                                    {% if order.status == 'delivered' %}
+                                                    <span class="badge bg-success">{{ order.status|title }}</span>
+                                                    {% elif order.status == 'pending' %}
+                                                    <span class="badge bg-warning">{{ order.status|title }}</span>
+                                                    {% elif order.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">{{ order.status|title }}</span>
+                                                    {% elif order.status == 'processing' %}
+                                                    <span class="badge bg-info">{{ order.status|title }}</span>
+                                                    {% elif order.status == 'shipped' %}
+                                                    <span class="badge bg-primary">{{ order.status|title }}</span>
+                                                    {% else %}
+                                                    <span class="badge bg-secondary">{{ order.status|title }}</span>
+                                                    {% endif %}
                                                 </td>
                                                 <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
                                                 <td>
