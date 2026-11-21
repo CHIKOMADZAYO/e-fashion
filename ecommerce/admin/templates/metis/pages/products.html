@@ -280,25 +280,8 @@
                                 <!-- Pagination -->
                                 <div class="d-flex justify-content-between align-items-center p-3">
                                     <div class="text-muted">
-                                        Showing <span x-text="(currentPage - 1) * itemsPerPage + 1"></span> to 
-                                        <span x-text="Math.min(currentPage * itemsPerPage, filteredProducts.length)"></span> of 
-                                        <span x-text="filteredProducts.length"></span> results
+                                        Showing all {{ products|length }} products
                                     </div>
-                                    <nav>
-                                        <ul class="pagination pagination-sm mb-0">
-                                            <li class="page-item" :class="{ 'disabled': currentPage === 1 }">
-                                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">Previous</a>
-                                            </li>
-                                            <template x-for="(page, index) in visiblePages" :key="`page-${index}`">
-                                                <li class="page-item" :class="{ 'active': page === currentPage }">
-                                                    <a class="page-link" href="#" @click.prevent="page !== '...' && goToPage(page)" x-text="page"></a>
-                                                </li>
-                                            </template>
-                                            <li class="page-item" :class="{ 'disabled': currentPage === totalPages }">
-                                                <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)">Next</a>
-                                            </li>
-                                        </ul>
-                                    </nav>
                                 </div>
                             </div>
                         </div>
@@ -375,5 +358,98 @@
         
     <script type="module" src="{% static 'admin/metis/assets/products-CO0vhJBI.js' %}"></script>
 
+    <script>
+    function getCsrfToken() {
+        const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+
+    async function editProduct(productId, link) {
+        event.preventDefault();
+        try {
+            const res = await fetch(`/admin/api/products/${productId}/`, {
+                headers: { 'X-CSRFToken': getCsrfToken(), 'Accept': 'application/json' }
+            });
+            const p = await res.json();
+            const formEl = document.querySelector('#productModal [x-data="productForm"]');
+            if (!formEl) return;
+            const alpine = formEl.__x;
+            if (!alpine) return;
+            alpine.productForm.form = {
+                name: p.name || '',
+                sku: p.sku || '',
+                category: p.category ? p.category.id : '',
+                price: String(p.price || ''),
+                stock: String(p.stock_quantity || ''),
+                description: p.description || '',
+                status: p.is_active ? 'published' : 'draft',
+                image: null
+            };
+            alpine.productForm.editingId = p.id;
+            const modal = new bootstrap.Modal(document.getElementById('productModal'));
+            modal.show();
+        } catch (e) {
+            console.error(e);
+            alert('Failed to load product for editing');
+        }
+    }
+
+    async function viewProduct(productId, link) {
+        event.preventDefault();
+        try {
+            const res = await fetch(`/admin/api/products/${productId}/`, {
+                headers: { 'X-CSRFToken': getCsrfToken(), 'Accept': 'application/json' }
+            });
+            const p = await res.json();
+            alert(`Product Details:\n\nName: ${p.name}\nSKU: ${p.sku}\nCategory: ${p.category ? p.category.name : 'N/A'}\nPrice: $${p.price}\nStock: ${p.stock_quantity}\nStatus: ${p.is_active ? 'Published' : 'Draft'}\nDescription: ${p.description || 'N/A'}`);
+        } catch (e) {
+            console.error(e);
+            alert('Failed to load product details');
+        }
+    }
+
+    async function duplicateProduct(productId, link) {
+        event.preventDefault();
+        if (!confirm('Duplicate this product?')) return;
+        try {
+            const res = await fetch(`/admin/api/products/${productId}/`, {
+                headers: { 'X-CSRFToken': getCsrfToken(), 'Accept': 'application/json' }
+            });
+            const p = await res.json();
+            const formData = new FormData();
+            formData.append('name', p.name + ' (Copy)');
+            formData.append('sku', (p.sku || '') + '-COPY');
+            formData.append('description', p.description || '');
+            formData.append('category', p.category ? p.category.id : '');
+            formData.append('price', p.price || 0);
+            formData.append('stock_quantity', p.stock_quantity || 0);
+            formData.append('is_active', p.is_active);
+            await fetch('/admin/api/products/create/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCsrfToken() },
+                body: formData
+            });
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert('Failed to duplicate product');
+        }
+    }
+
+    async function deleteProduct(productId, link) {
+        event.preventDefault();
+        if (!confirm('Delete this product?')) return;
+        try {
+            await fetch(`/admin/api/products/${productId}/delete/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': getCsrfToken() }
+            });
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert('Failed to delete product');
+        }
+    }
+    </script>
 {% endblock %}
 
