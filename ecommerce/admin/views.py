@@ -91,6 +91,8 @@ def admin_register(request):
 
         StaffProfile.objects.get_or_create(user=user, defaults={'role': cd['role'], 'is_active': True})
 
+        login(request, user)
+
         AuditLog.objects.create(
             user=request.user,
             action='user_create',
