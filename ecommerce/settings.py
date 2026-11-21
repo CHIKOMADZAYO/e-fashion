@@ -36,7 +36,7 @@ if not SECRET_KEY and DEBUG:
 elif not SECRET_KEY and not DEBUG:
     raise ImproperlyConfigured("SECRET_KEY environment variable is required in production")
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.vercel.app').split(',')
 
 CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://estore-3vj1.onrender.com').split(',')
 
