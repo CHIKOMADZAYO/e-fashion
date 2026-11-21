@@ -4,6 +4,7 @@ from decimal import Decimal
 from urllib.request import Request, urlopen
 
 from django.core.cache import cache
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.db import transaction
@@ -15,7 +16,6 @@ from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from ecommerce.admin.models import AuditLog
 from .models import Cart, Category, Order, OrderItem, Product, Wishlist, WishlistItem
 
 # Create your views here.
@@ -52,8 +52,17 @@ def store_page(request, page):
                 | Q(description__icontains=search_query)
                 | Q(category__name__icontains=search_query)
             )
+        paginator = Paginator(products, 12)
+        page_number = request.GET.get('page', '1')
+        try:
+            products_page = paginator.page(page_number)
+        except PageNotAnInteger:
+            products_page = paginator.page(1)
+        except EmptyPage:
+            products_page = paginator.page(paginator.num_pages)
         context.update({
-            'products': products,
+            'products': products_page.object_list,
+            'products_page': products_page,
             'categories': Category.objects.filter(is_active=True),
             'selected_category': category_slug,
             'search_query': search_query,
@@ -183,6 +192,7 @@ def cart_add(request):
         return JsonResponse({"error": "There is not enough stock for that quantity."}, status=409)
     cart.save(update_fields=["updated_at"])
     try:
+        from ecommerce.admin.models import AuditLog
         AuditLog.objects.create(
             user=request.user if request.user.is_authenticated else None,
             action='add_to_cart',
@@ -253,6 +263,7 @@ def wishlist_toggle(request):
         wishlist.items.create(product=product)
     wishlist.save(update_fields=["updated_at"])
     try:
+        from ecommerce.admin.models import AuditLog
         AuditLog.objects.create(
             user=request.user if request.user.is_authenticated else None,
             action='wishlist_removed' if removed else 'wishlist_added',
@@ -346,6 +357,7 @@ def checkout_submit(request):
         return JsonResponse({"error": "We could not place your order. Please try again."}, status=500)
 
     try:
+        from ecommerce.admin.models import AuditLog
         AuditLog.objects.create(
             user=request.user if request.user.is_authenticated else None,
             action='order_placed',

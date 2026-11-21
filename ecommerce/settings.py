@@ -1,4 +1,5 @@
 
+from django.core.exceptions import ImproperlyConfigured
 from pathlib import Path
 import os
 import dj_database_url
@@ -20,11 +21,16 @@ MPESA_TRANSACTION_TYPE = os.environ.get('MPESA_TRANSACTION_TYPE', 'CustomerPayBi
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure--3t0-00rsni#^qa(%kl0euy(7zb4978r5m0t%n6nxvu#yzf@j+')
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+if not SECRET_KEY and DEBUG:
+    import secrets
+    SECRET_KEY = secrets.token_urlsafe(50)
+elif not SECRET_KEY and not DEBUG:
+    raise ImproperlyConfigured("SECRET_KEY environment variable is required in production")
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 

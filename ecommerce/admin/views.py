@@ -10,7 +10,6 @@ from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import StaffProfile, SiteSettings, AuditLog
@@ -123,15 +122,8 @@ def admin_logout(request):
     return redirect('admin_login')
 
 
-@admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
-def dashboard(request):
-    from ecommerce.ui.models import Order, Product
-    from django.contrib.auth import get_user_model
-
-    User = get_user_model()
-    settings = SiteSettings.load()
-
+def _get_dashboard_stats(Order, Product, User, settings):
+    """Shared helper to compute dashboard statistics."""
     total_orders = 0
     total_revenue = 0
     pending_orders = 0
@@ -146,23 +138,47 @@ def dashboard(request):
         pending_orders = Order.objects.filter(status='pending').count()
         completed_orders = Order.objects.filter(status='delivered').count()
         total_products = Product.objects.count()
-        low_stock_products = Product.objects.filter(stock_quantity__lte=settings.low_stock_threshold if settings else 10).count()
+        low_stock_products = Product.objects.filter(
+            stock_quantity__lte=settings.low_stock_threshold if settings else 10
+        ).count()
         total_customers = User.objects.filter(is_staff=False, is_superuser=False).count()
     except Exception:
         pass
+
+    return {
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'pending_orders': pending_orders,
+        'completed_orders': completed_orders,
+        'total_products': total_products,
+        'low_stock_products': low_stock_products,
+        'total_customers': total_customers,
+    }
+
+
+@admin_login_required
+@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+def dashboard(request):
+    from ecommerce.ui.models import Order, Product
+    from django.contrib.auth import get_user_model
+
+    User = get_user_model()
+    settings = SiteSettings.load()
+
+    stats = _get_dashboard_stats(Order, Product, User, settings)
 
     recent_audit_logs = AuditLog.objects.select_related('user').order_by('-created_at')[:10]
     recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
 
     context = {
         'settings': settings,
-        'total_orders': total_orders,
-        'total_revenue': float(total_revenue),
-        'pending_orders': pending_orders,
-        'completed_orders': completed_orders,
-        'total_products': total_products,
-        'low_stock_products': low_stock_products,
-        'total_customers': total_customers,
+        'total_orders': stats['total_orders'],
+        'total_revenue': float(stats['total_revenue']),
+        'pending_orders': stats['pending_orders'],
+        'completed_orders': stats['completed_orders'],
+        'total_products': stats['total_products'],
+        'low_stock_products': stats['low_stock_products'],
+        'total_customers': stats['total_customers'],
         'recent_audit_logs': recent_audit_logs,
         'recent_orders': recent_orders,
     }
@@ -462,28 +478,21 @@ def dashboard_stats_api(request):
     from django.contrib.auth import get_user_model
 
     User = get_user_model()
-
     settings = SiteSettings.load()
 
-    # Basic stats
-    total_orders = Order.objects.count()
-    total_revenue = Order.objects.aggregate(total=Sum('total'))['total'] or 0
-    pending_orders = Order.objects.filter(status='pending').count()
-    completed_orders = Order.objects.filter(status='delivered').count()
-    total_products = Product.objects.count()
-    low_stock_products = Product.objects.filter(stock_quantity__lte=settings.low_stock_threshold if settings else 10).count()
+    stats = _get_dashboard_stats(Order, Product, User, settings)
 
     # Recent activity
     recent_logs = AuditLog.objects.select_related('user').order_by('-created_at')[:5]
 
     data = {
-        'total_orders': total_orders,
-        'total_revenue': float(total_revenue),
-        'pending_orders': pending_orders,
-        'completed_orders': completed_orders,
-        'total_products': total_products,
-        'low_stock_products': low_stock_products,
-        'total_customers': User.objects.filter(is_staff=False, is_superuser=False).count(),
+        'total_orders': stats['total_orders'],
+        'total_revenue': float(stats['total_revenue']),
+        'pending_orders': stats['pending_orders'],
+        'completed_orders': stats['completed_orders'],
+        'total_products': stats['total_products'],
+        'low_stock_products': stats['low_stock_products'],
+        'total_customers': stats['total_customers'],
         'recent_logs': [
             {
                 'action': log.action,
