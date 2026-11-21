@@ -152,6 +152,7 @@ def dashboard(request):
         pass
 
     recent_audit_logs = AuditLog.objects.select_related('user').order_by('-created_at')[:10]
+    recent_orders = Order.objects.select_related('user').order_by('-created_at')[:10]
 
     context = {
         'settings': settings,
@@ -163,6 +164,7 @@ def dashboard(request):
         'low_stock_products': low_stock_products,
         'total_customers': total_customers,
         'recent_audit_logs': recent_audit_logs,
+        'recent_orders': recent_orders,
     }
     return render(request, 'metis/pages/index.html', context)
 

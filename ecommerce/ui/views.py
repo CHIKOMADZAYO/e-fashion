@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from ecommerce.admin.models import AuditLog
 from .models import Cart, Category, Order, OrderItem, Product, Wishlist, WishlistItem
 
 # Create your views here.
@@ -181,6 +182,17 @@ def cart_add(request):
             item.delete()
         return JsonResponse({"error": "There is not enough stock for that quantity."}, status=409)
     cart.save(update_fields=["updated_at"])
+    try:
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action='add_to_cart',
+            model_name='product',
+            object_id=str(product.id),
+            object_repr=product.name,
+            details={'quantity': quantity, 'session_key': request.session.session_key or ''},
+        )
+    except Exception:
+        pass
     return JsonResponse({"cart": _cart_payload(cart), "product_name": product.name})
 
 
@@ -240,6 +252,17 @@ def wishlist_toggle(request):
     else:
         wishlist.items.create(product=product)
     wishlist.save(update_fields=["updated_at"])
+    try:
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action='wishlist_removed' if removed else 'wishlist_added',
+            model_name='product',
+            object_id=str(product.id),
+            object_repr=product.name,
+            details={'session_key': request.session.session_key or ''},
+        )
+    except Exception:
+        pass
     return JsonResponse({"wishlist": _wishlist_payload(wishlist), "saved": not removed})
 
 
@@ -321,6 +344,25 @@ def checkout_submit(request):
             cart.items.all().delete()
     except Exception:
         return JsonResponse({"error": "We could not place your order. Please try again."}, status=500)
+
+    try:
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action='order_placed',
+            model_name='order',
+            object_id=str(order.order_number),
+            object_repr=f'Order #{order.order_number}',
+            details={
+                'customer_email': order.customer_email,
+                'customer_name': order.customer_name,
+                'total': str(order.total),
+                'payment_method': order.payment_method,
+                'session_key': request.session.session_key or '',
+            },
+        )
+    except Exception:
+        pass
+
     return JsonResponse({
         "order_number": str(order.order_number),
         "total": str(order.total),
