@@ -205,6 +205,7 @@ document.addEventListener('alpine:init', () => {
                 formData.append('name', form.name);
                 formData.append('sku', form.sku);
                 formData.append('description', form.description || '');
+                formData.append('category', form.category);
                 formData.append('price', parseFloat(form.price) || 0);
                 formData.append('stock_quantity', parseInt(form.stock) || 0);
                 formData.append('is_active', form.status === 'published');
@@ -313,6 +314,7 @@ document.addEventListener('alpine:init', () => {
                 formData.append('name', this.form.name);
                 formData.append('sku', this.form.sku);
                 formData.append('description', this.form.description || '');
+                formData.append('category', this.form.category);
                 formData.append('price', parseFloat(this.form.price) || 0);
                 formData.append('stock_quantity', parseInt(this.form.stock) || 0);
                 formData.append('is_active', this.form.status === 'published');

@@ -1041,7 +1041,7 @@ def api_product_update(request, product_id):
             return JsonResponse({'error': 'SKU already exists'}, status=400)
 
     fields_to_update = []
-    for field in ['name', 'sku', 'description', 'price', 'compare_at_price', 'stock_quantity', 'is_active', 'is_featured']:
+    for field in ['name', 'sku', 'description', 'price', 'compare_at_price', 'stock_quantity']:
         if field in data:
             if field == 'price':
                 setattr(product, field, Decimal(data[field]))
@@ -1050,6 +1050,14 @@ def api_product_update(request, product_id):
             else:
                 setattr(product, field, data[field])
             fields_to_update.append(field)
+
+    # Boolean fields - handle string "true"/"false" from FormData
+    if 'is_active' in data:
+        product.is_active = str(data['is_active']).lower() == 'true'
+        fields_to_update.append('is_active')
+    if 'is_featured' in data:
+        product.is_featured = str(data['is_featured']).lower() == 'true'
+        fields_to_update.append('is_featured')
 
     if 'name' in data:
         product.slug = data['name'].lower().replace(' ', '-')[:200]
