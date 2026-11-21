@@ -59,7 +59,7 @@ def admin_login(request):
     else:
         form = AdminLoginForm()
 
-    return render(request, 'metis/auth/admin_login.html', {'form': form, 'next': request.GET.get('next', '')})
+    return render(request, 'metis/auth/login.html', {'form': form, 'next': request.GET.get('next', '')})
 
 
 def admin_register(request):
@@ -104,7 +104,7 @@ def admin_register(request):
         return JsonResponse({'success': True, 'id': user.id, 'username': user.username})
 
     form = AdminRegisterForm()
-    return render(request, 'metis/auth/admin_register.html', {'form': form})
+    return render(request, 'metis/auth/register.html', {'form': form})
 
 
 @require_http_methods(["POST"])
