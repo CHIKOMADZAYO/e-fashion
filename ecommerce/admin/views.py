@@ -67,7 +67,12 @@ def admin_register(request):
     User = get_user_model()
 
     if request.method == 'POST':
-        form = AdminRegisterForm(request.POST)
+        import json
+        try:
+            data = json.loads(request.body) if request.body else {}
+        except json.JSONDecodeError:
+            data = {}
+        form = AdminRegisterForm(data)
         if not form.is_valid():
             return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
 
