@@ -19,6 +19,7 @@ class StaffProfile(models.Model):
     )
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.ADMIN)
     is_active = models.BooleanField(default=True)
+    is_approved = models.BooleanField(default=False, help_text="Must be approved by a superadmin before they can log in.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

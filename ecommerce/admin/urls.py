@@ -24,6 +24,10 @@ urlpatterns = [
     # Admin registration
     path('register/', views.admin_register, name='admin_register'),
 
+    # Staff approvals (superadmin only)
+    path('staff-approvals/', views.staff_approvals, name='staff_approvals'),
+    path('staff-approvals/<int:user_id>/approve/', views.approve_staff, name='approve_staff'),
+
     # Orders (HTML pages)
     path('orders/', views.orders, name='orders'),
     path('orders.html', views.orders, name='orders_html'),

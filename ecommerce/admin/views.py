@@ -39,6 +39,9 @@ def admin_login(request):
             if user is not None:
                 staff_profile, created = StaffProfile.objects.get_or_create(user=user)
                 if staff_profile.is_active:
+                    if not staff_profile.is_approved:
+                        messages.error(request, 'Your account is pending approval by a superadmin. Please wait for approval before signing in.')
+                        return render(request, 'metis/auth/admin_login.html', {'form': form, 'next': request.GET.get('next', '')})
                     login(request, user)
                     AuditLog.objects.create(
                         user=user,
@@ -88,20 +91,17 @@ def admin_register(request):
         user.is_active = True
         user.save()
 
-        user.backend = 'django.contrib.auth.backends.ModelBackend'
-        StaffProfile.objects.get_or_create(user=user, defaults={'role': cd['role'], 'is_active': True})
-
-        login(request, user)
+        StaffProfile.objects.get_or_create(user=user, defaults={'role': cd['role'], 'is_active': True, 'is_approved': False})
 
         AuditLog.objects.create(
             user=request.user if request.user.is_authenticated else None,
             action='user_create',
             model_name='user',
             object_repr=f'User: {user.username}',
-            details={'created_by': request.user.username if request.user.is_authenticated else 'system'},
+            details={'created_by': request.user.username if request.user.is_authenticated else 'system', 'requires_approval': True},
         )
 
-        return JsonResponse({'success': True, 'id': user.id, 'username': user.username})
+        return JsonResponse({'success': True, 'id': user.id, 'username': user.username, 'requires_approval': True})
 
     form = AdminRegisterForm()
     return render(request, 'metis/auth/admin_register.html', {'form': form})
@@ -120,6 +120,64 @@ def admin_logout(request):
         )
     logout(request)
     return redirect('admin_login')
+
+
+@admin_login_required
+@user_passes_test(lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False)
+def staff_approvals(request):
+    """List pending staff registrations awaiting superadmin approval."""
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    pending = User.objects.filter(
+        is_staff=True,
+        staff_profile__is_approved=False,
+        staff_profile__is_active=True,
+    ).order_by('-date_joined')
+    return render(request, 'metis/pages/staff_approvals.html', {'pending_staff': pending})
+
+
+@admin_login_required
+@user_passes_test(lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False)
+@require_http_methods(["POST"])
+def approve_staff(request, user_id):
+    """Approve or reject a pending staff registration."""
+    from django.contrib.auth import get_user_model
+    import json
+    User = get_user_model()
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    action = payload.get('action')  # 'approve' or 'reject'
+    try:
+        user = User.objects.get(pk=user_id, is_staff=True, staff_profile__is_approved=False)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Staff user not found or already processed.'}, status=404)
+    if action == 'approve':
+        user.staff_profile.is_approved = True
+        user.staff_profile.save(update_fields=['is_approved'])
+        AuditLog.objects.create(
+            user=request.user,
+            action='staff_approved',
+            model_name='user',
+            object_repr=f'User: {user.username}',
+            details={'approved_by': request.user.username},
+        )
+        return JsonResponse({'success': True, 'action': 'approved'})
+    elif action == 'reject':
+        user.is_active = False
+        user.staff_profile.is_active = False
+        user.save(update_fields=['is_active'])
+        user.staff_profile.save(update_fields=['is_active'])
+        AuditLog.objects.create(
+            user=request.user,
+            action='staff_rejected',
+            model_name='user',
+            object_repr=f'User: {user.username}',
+            details={'rejected_by': request.user.username},
+        )
+        return JsonResponse({'success': True, 'action': 'rejected'})
+    return JsonResponse({'error': 'Invalid action.'}, status=400)
 
 
 def _get_dashboard_stats(Order, Product, User, settings):
@@ -193,9 +251,9 @@ def orders(request):
     status_filter = request.GET.get('status', '')
 
     if status_filter:
-        orders_list = Order.objects.filter(status=status_filter).order_by('-created_at')
+        orders_list = Order.objects.filter(status=status_filter).select_related('user').prefetch_related('items').order_by('-created_at')
     else:
-        orders_list = Order.objects.all().order_by('-created_at')
+        orders_list = Order.objects.all().select_related('user').prefetch_related('items').order_by('-created_at')
 
     context = {
         'orders': orders_list,
