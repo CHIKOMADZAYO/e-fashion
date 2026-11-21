@@ -1,5 +1,7 @@
 import { v as createChart } from "./main-db-DdQNj.js";
 
+let currentChartPeriod = '7d';
+
 function getCsrfToken() {
     const m = document.cookie.match(/(?:^|;)\s*csrftoken=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : '';
@@ -17,13 +19,11 @@ async function fetchJSON(url) {
     return res.json();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    if (document.body.dataset.page !== 'dashboard') return;
-
+async function loadDashboard() {
     try {
         const [stats, chartData, ordersData] = await Promise.all([
             fetchJSON('/admin/api/dashboard-stats/'),
-            fetchJSON('/admin/api/dashboard/charts/?days=7'),
+            fetchJSON(`/admin/api/dashboard/charts/?days=${currentChartPeriod.replace('d', '')}`),
             fetchJSON('/admin/api/dashboard/recent-orders/?limit=5')
         ]);
 
@@ -106,19 +106,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, { height: 280 });
         }
 
-        // Storage status chart
+        // Low Stock Ratio chart (was Storage Status)
         const storageEl = document.getElementById('storageStatusChart');
         if (storageEl) {
             const total = stats.total_products || 1;
             const low = stats.low_stock_products || 0;
-            const used = Math.round(low / total * 100);
+            const healthy = Math.max(0, total - low);
             createChart(storageEl, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Used Space', 'Free Space'],
+                    labels: ['Low Stock', 'Healthy Stock'],
                     datasets: [{
-                        data: [used, Math.max(0, 100 - used)],
-                        backgroundColor: used > 50 ? '#dc2626' : '#16a34a',
+                        data: [low, healthy],
+                        backgroundColor: low > 0 ? '#dc2626' : '#16a34a',
                         borderWidth: 0,
                         borderRadius: [{ outerStart: 12, outerEnd: 12, innerStart: 12, innerEnd: 12 }, 0]
                     }]
@@ -136,25 +136,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, { height: 280 });
         }
 
-        // Sales by location chart
-        const salesEl = document.getElementById('salesByLocationChart');
-        if (salesEl) {
-            createChart(salesEl, {
-                type: 'doughnut',
-                data: {
-                    labels: chartData.order_status.labels,
-                    datasets: [{
-                        data: chartData.order_status.data,
-                        backgroundColor: ['#2563eb', '#0d9488', '#d97706', '#dc2626'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
-            }, { height: 350 });
+        // Populate order status summary table
+        const statusTable = document.getElementById('order-status-summary');
+        if (statusTable && chartData.order_status) {
+            const totalOrders = chartData.order_status.data.reduce((a, b) => a + b, 0) || stats.total_orders || 1;
+            statusTable.innerHTML = chartData.order_status.labels.map((label, i) => {
+                const count = chartData.order_status.data[i] || 0;
+                const pct = totalOrders > 0 ? Math.round(count / totalOrders * 100) : 0;
+                return `
+                    <tr>
+                        <td><span class="badge bg-${label === 'delivered' ? 'success' : label === 'pending' ? 'warning' : label === 'cancelled' ? 'danger' : 'primary'}">${label}</span></td>
+                        <td>${count}</td>
+                        <td>${pct}%</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         // Populate recent orders table
@@ -174,4 +170,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         console.error('Dashboard load failed', e);
     }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (document.body.dataset.page !== 'dashboard') return;
+
+    // Wire up chart period buttons
+    document.querySelectorAll('[data-chart-period]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-chart-period]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentChartPeriod = btn.dataset.chartPeriod;
+            loadDashboard();
+        });
+    });
+
+    await loadDashboard();
 });
