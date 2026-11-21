@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
@@ -123,7 +123,10 @@ def admin_logout(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False)
+@user_passes_test(
+    lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False,
+    login_url=reverse_lazy('admin_login'),
+)
 def staff_approvals(request):
     """List pending staff registrations awaiting superadmin approval."""
     from django.contrib.auth import get_user_model
@@ -137,7 +140,10 @@ def staff_approvals(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False)
+@user_passes_test(
+    lambda u: u.staff_profile.role == StaffProfile.Role.SUPERADMIN if hasattr(u, 'staff_profile') else False,
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["POST"])
 def approve_staff(request, user_id):
     """Approve or reject a pending staff registration."""
@@ -215,7 +221,10 @@ def _get_dashboard_stats(Order, Product, User, settings):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def dashboard(request):
     from ecommerce.ui.models import Order, Product
     from django.contrib.auth import get_user_model
@@ -244,7 +253,10 @@ def dashboard(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def orders(request):
     from ecommerce.ui.models import Order
 
@@ -263,7 +275,10 @@ def orders(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def order_detail(request, order_number):
     from ecommerce.ui.models import Order, OrderItem
 
@@ -277,7 +292,10 @@ def order_detail(request, order_number):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def products(request):
     from ecommerce.ui.models import Product, Category
     from django.db.models import Sum
@@ -311,7 +329,10 @@ def products(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def users(request):
     from django.contrib.auth import get_user_model
 
@@ -325,7 +346,10 @@ def users(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def categories(request):
     from ecommerce.ui.models import Category
 
@@ -337,7 +361,10 @@ def categories(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def settings_modal(request):
     from django.db import transaction
 
@@ -379,14 +406,20 @@ def settings_modal(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def deprecated_page_redirect(request):
     """Redirect deprecated Metis pages to dashboard."""
     return redirect('dashboard')
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_settings_get(request):
     """API: Get SiteSettings."""
     settings = SiteSettings.load()
@@ -403,7 +436,10 @@ def api_settings_get(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["PATCH", "POST"])
 def api_settings_update(request):
     """API: Update SiteSettings."""
@@ -451,7 +487,10 @@ def api_settings_update(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def audit_logs(request):
     from ecommerce.admin.models import AuditLog
 
@@ -459,7 +498,10 @@ def audit_logs(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_audit_logs(request):
     """API: List audit logs with pagination, filtering, sorting."""
     from ecommerce.admin.models import AuditLog
@@ -520,7 +562,10 @@ def api_audit_logs(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def export_data(request):
     from ecommerce.ui.models import Order, Product
 
@@ -542,7 +587,10 @@ def export_data(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def dashboard_stats_api(request):
     """API endpoint for dashboard statistics."""
     from ecommerce.ui.models import Order, Product
@@ -620,7 +668,10 @@ def dashboard_stats_api(request):
 # ==================== ORDERS API ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_orders_list(request):
     """API: List orders with pagination, filtering, sorting."""
     from ecommerce.ui.models import Order
@@ -713,7 +764,10 @@ def api_orders_list(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_order_detail(request, order_number):
     """API: Get order detail."""
     from ecommerce.ui.models import Order, OrderItem
@@ -759,7 +813,10 @@ def api_order_detail(request, order_number):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["PATCH", "POST"])
 def api_order_update_status(request, order_number):
     """API: Update order status."""
@@ -795,7 +852,10 @@ def api_order_update_status(request, order_number):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["POST"])
 def api_orders_bulk(request):
     """API: Bulk update order status."""
@@ -836,7 +896,10 @@ def api_orders_bulk(request):
 # ==================== PRODUCTS API ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_products_list(request):
     """API: List products with pagination, filtering, sorting."""
     from ecommerce.ui.models import Product, Category
@@ -932,7 +995,10 @@ def api_products_list(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_product_detail(request, product_id):
     """API: Get product detail."""
     from ecommerce.ui.models import Product
@@ -962,7 +1028,10 @@ def api_product_detail(request, product_id):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["POST"])
 def api_product_create(request):
     """API: Create product."""
@@ -1017,7 +1086,10 @@ def api_product_create(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["PATCH", "PUT"])
 def api_product_update(request, product_id):
     """API: Update product."""
@@ -1083,7 +1155,10 @@ def api_product_update(request, product_id):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["DELETE"])
 def api_product_delete(request, product_id):
     """API: Delete product."""
@@ -1109,7 +1184,10 @@ def api_product_delete(request, product_id):
 # ==================== USERS API ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_users_list(request):
     """API: List users with pagination, filtering, sorting."""
     from django.contrib.auth import get_user_model
@@ -1186,7 +1264,10 @@ def api_users_list(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_user_detail(request, user_id):
     """API: Get user detail with orders."""
     from django.contrib.auth import get_user_model
@@ -1223,7 +1304,10 @@ def api_user_detail(request, user_id):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["PATCH", "PUT"])
 def api_user_update(request, user_id):
     """API: Update user (activate/deactivate, etc.)."""
@@ -1260,7 +1344,10 @@ def api_user_update(request, user_id):
 # ==================== CATEGORIES API ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_categories_list(request):
     """API: List categories."""
     from ecommerce.ui.models import Category
@@ -1283,7 +1370,10 @@ def api_categories_list(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["POST"])
 def api_category_create(request):
     """API: Create category."""
@@ -1311,7 +1401,10 @@ def api_category_create(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["PATCH", "PUT"])
 def api_category_update(request, category_id):
     """API: Update category."""
@@ -1337,7 +1430,10 @@ def api_category_update(request, category_id):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["DELETE"])
 def api_category_delete(request, category_id):
     """API: Delete category."""
@@ -1351,7 +1447,10 @@ def api_category_delete(request, category_id):
 # ==================== USERS API (create / delete) ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["POST"])
 def api_user_create(request):
     """API: Create user."""
@@ -1386,7 +1485,10 @@ def api_user_create(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 @require_http_methods(["DELETE"])
 def api_user_delete(request, user_id):
     """API: Delete user."""
@@ -1405,7 +1507,10 @@ def api_user_delete(request, user_id):
 # ==================== DASHBOARD API ====================
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_dashboard_charts(request):
     """API: Dashboard chart data."""
     from ecommerce.ui.models import Order, Product
@@ -1459,7 +1564,10 @@ def api_dashboard_charts(request):
 
 
 @admin_login_required
-@user_passes_test(lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists())
+@user_passes_test(
+    lambda u: StaffProfile.objects.filter(user=u, is_active=True).exists(),
+    login_url=reverse_lazy('admin_login'),
+)
 def api_dashboard_recent_orders(request):
     """API: Recent orders for dashboard table."""
     from ecommerce.ui.models import Order
