@@ -67,11 +67,6 @@ def admin_register(request):
     User = get_user_model()
 
     if request.method == 'POST':
-        if not request.user.is_authenticated:
-            return redirect(f"{reverse('admin_login')}?next={request.path}")
-        if not StaffProfile.objects.filter(user=request.user, is_active=True).exists():
-            return JsonResponse({'success': False, 'errors': {'non_field': ['Staff access required.']}}, status=403)
-
         form = AdminRegisterForm(request.POST)
         if not form.is_valid():
             return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
