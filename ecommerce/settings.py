@@ -159,6 +159,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary storage for media on Vercel (read-only filesystem)
 USE_CLOUDINARY = os.environ.get('USE_CLOUDINARY', 'False').lower() == 'true'
+if not USE_CLOUDINARY:
+    USE_CLOUDINARY = bool(
+        os.environ.get('CLOUDINARY_CLOUD_NAME')
+        and os.environ.get('CLOUDINARY_API_KEY')
+        and os.environ.get('CLOUDINARY_API_SECRET')
+    )
+
 if USE_CLOUDINARY:
     INSTALLED_APPS.append('cloudinary_storage')
     INSTALLED_APPS.append('cloudinary')
