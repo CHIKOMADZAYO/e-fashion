@@ -896,7 +896,7 @@ def api_products_list(request):
             'stockQuantity': product.stock_quantity,
             'isActive': product.is_active,
             'isFeatured': product.is_featured,
-            'image': product.image,
+        'image': product.image.url if product.image else None,
             'createdAt': product.created_at.isoformat(),
         }
 
