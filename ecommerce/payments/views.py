@@ -1,9 +1,7 @@
 import json
-import secrets
 from decimal import Decimal, InvalidOperation
 from datetime import timedelta
 
-from django.conf import settings
 from django.db import transaction
 from django.http import Http404, JsonResponse
 from django.utils import timezone
@@ -215,10 +213,7 @@ def payment_status(request, reference):
 
 @csrf_exempt
 @require_POST
-def stk_callback(request, token):
-    configured_token = settings.MPESA_CALLBACK_TOKEN
-    if not configured_token or not secrets.compare_digest(token, configured_token):
-        return JsonResponse({"error": "Not found."}, status=404)
+def stk_callback(request):
     payload = _json_body(request)
     callback = (payload or {}).get("Body", {}).get("stkCallback")
     if not isinstance(callback, dict):

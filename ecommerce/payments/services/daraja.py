@@ -41,7 +41,7 @@ def _validate_callback_url(callback_url):
 
 def _callback_url(credentials):
     _validate_callback_url(credentials.callback_url)
-    return f"{credentials.callback_url}/{credentials.callback_token}/"
+    return credentials.callback_url
 
 
 def get_access_token():

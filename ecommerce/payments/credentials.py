@@ -15,7 +15,6 @@ class MpesaCredentials:
     shortcode: str
     passkey: str
     callback_url: str
-    callback_token: str
     transaction_type: str
 
 
@@ -30,15 +29,12 @@ def load_mpesa_credentials():
         "MPESA_SHORTCODE": settings.MPESA_SHORTCODE,
         "MPESA_PASSKEY": settings.MPESA_PASSKEY,
         "MPESA_CALLBACK_URL": settings.MPESA_CALLBACK_URL,
-        "MPESA_CALLBACK_TOKEN": settings.MPESA_CALLBACK_TOKEN,
     }
     missing = [name for name, value in values.items() if not value.strip()]
     if missing:
         raise PaymentConfigurationError(
             "Missing Daraja settings: " + ", ".join(missing)
         )
-    if len(values["MPESA_CALLBACK_TOKEN"]) < 32:
-        raise PaymentConfigurationError("MPESA_CALLBACK_TOKEN must be at least 32 characters.")
 
     return MpesaCredentials(
         environment=environment,
@@ -47,6 +43,5 @@ def load_mpesa_credentials():
         shortcode=values["MPESA_SHORTCODE"],
         passkey=values["MPESA_PASSKEY"],
         callback_url=values["MPESA_CALLBACK_URL"].rstrip("/"),
-        callback_token=values["MPESA_CALLBACK_TOKEN"],
         transaction_type=settings.MPESA_TRANSACTION_TYPE,
     )
