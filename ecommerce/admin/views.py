@@ -476,14 +476,39 @@ def dashboard_stats_api(request):
     from ecommerce.ui.models import Order, Product
     from ecommerce.admin.models import AuditLog
     from django.contrib.auth import get_user_model
+    from django.db.models import Sum
+    from django.utils import timezone
+    from datetime import timedelta
 
     User = get_user_model()
     settings = SiteSettings.load()
 
+    now = timezone.now()
+    period_start = now - timedelta(days=30)
+    prev_start = now - timedelta(days=60)
+
     stats = _get_dashboard_stats(Order, Product, User, settings)
+
+    # Previous period data for trend computation
+    prev_orders = Order.objects.filter(created_at__gte=prev_start, created_at__lt=period_start).count()
+    curr_orders = Order.objects.filter(created_at__gte=period_start).count()
+    prev_revenue = Order.objects.filter(created_at__gte=prev_start, created_at__lt=period_start).aggregate(total=Sum('total'))['total'] or 0
+    curr_revenue = Order.objects.filter(created_at__gte=period_start).aggregate(total=Sum('total'))['total'] or 0
+    prev_customers = User.objects.filter(is_staff=False, is_superuser=False, date_joined__gte=prev_start, date_joined__lt=period_start).count()
+    curr_customers = User.objects.filter(is_staff=False, is_superuser=False, date_joined__gte=period_start).count()
+    prev_low_stock = Product.objects.filter(created_at__gte=prev_start, created_at__lt=period_start, stock_quantity__lte=settings.low_stock_threshold if settings else 10).count()
+    curr_low_stock = Product.objects.filter(created_at__gte=period_start, stock_quantity__lte=settings.low_stock_threshold if settings else 10).count()
+
+    def pct_change(curr, prev):
+        if prev == 0:
+            return 100 if curr > 0 else 0
+        return round((curr - prev) / prev * 100)
 
     # Recent activity
     recent_logs = AuditLog.objects.select_related('user').order_by('-created_at')[:5]
+
+    # Recent notifications from audit logs
+    recent_notifications = AuditLog.objects.select_related('user').order_by('-created_at')[:10]
 
     data = {
         'total_orders': stats['total_orders'],
@@ -493,6 +518,12 @@ def dashboard_stats_api(request):
         'total_products': stats['total_products'],
         'low_stock_products': stats['low_stock_products'],
         'total_customers': stats['total_customers'],
+        'trends': {
+            'orders': pct_change(curr_orders, prev_orders),
+            'revenue': pct_change(float(curr_revenue), float(prev_revenue)),
+            'customers': pct_change(curr_customers, prev_customers),
+            'low_stock': pct_change(curr_low_stock, prev_low_stock),
+        },
         'recent_logs': [
             {
                 'action': log.action,
@@ -500,6 +531,15 @@ def dashboard_stats_api(request):
                 'created_at': log.created_at.isoformat(),
             }
             for log in recent_logs
+        ],
+        'notifications': [
+            {
+                'id': log.id,
+                'title': log.action.replace('_', ' ').title(),
+                'user': str(log.user) if log.user else 'System',
+                'created_at': log.created_at.isoformat(),
+            }
+            for log in recent_notifications
         ],
     }
     return JsonResponse(data)

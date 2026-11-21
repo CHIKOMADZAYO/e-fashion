@@ -62,7 +62,7 @@
                                         <p class="h6 mb-0 text-muted">Total Users</p>
                                         <div class="h3 mb-0" aria-live="polite" data-stat-value>{{ total_customers|floatformat:0 }}</div>
                                         <small class="text-muted">
-                                            Registered customers <span class="badge bg-success ms-1">+12% vs last period</span>
+                                            Registered customers <span class="badge bg-success ms-1 trend-badge" data-trend="customers">+0% vs last period</span>
                                         </small>
                                     </div>
                                 </div>
@@ -82,7 +82,7 @@
                                     <div class="flex-grow-1 ms-3">
                                         <p class="h6 mb-0 text-muted">Revenue</p>
                                         <h3 class="mb-0">{{ settings.currency }} {{ total_revenue|floatformat:2 }}</h3>
-                                        <small class="text-muted">Confirmed orders <span class="badge bg-success ms-1">+8% vs last period</span></small>
+                                        <small class="text-muted">Confirmed orders <span class="badge bg-success ms-1 trend-badge" data-trend="revenue">+0% vs last period</span></small>
                                     </div>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@
                                     <div class="flex-grow-1 ms-3">
                                         <p class="h6 mb-0 text-muted">Orders</p>
                                         <h3 class="mb-0">{{ total_orders|floatformat:0 }}</h3>
-                                        <small class="text-muted">{{ pending_orders }} pending <span class="badge bg-warning ms-1">+5 vs last period</span></small>
+                                        <small class="text-muted">{{ pending_orders }} pending <span class="badge bg-warning ms-1 trend-badge" data-trend="orders">+0 vs last period</span></small>
                                     </div>
                                 </div>
                             </div>
@@ -120,7 +120,7 @@
                                     <div class="flex-grow-1 ms-3">
                                         <p class="h6 mb-0 text-muted">Low Stock</p>
                                         <h3 class="mb-0">{{ low_stock_products|floatformat:0 }}</h3>
-                                        <small class="text-muted">Below threshold of {{ settings.low_stock_threshold }} <span class="badge bg-danger ms-1">+3 vs last period</span></small>
+                                        <small class="text-muted">Below threshold of {{ settings.low_stock_threshold }} <span class="badge bg-danger ms-1 trend-badge" data-trend="low_stock">+0 vs last period</span></small>
                                     </div>
                                 </div>
                             </div>

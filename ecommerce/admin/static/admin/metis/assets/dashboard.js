@@ -153,6 +153,51 @@ async function loadDashboard() {
             }).join('');
         }
 
+        // Populate trend badges
+        const trendEls = document.querySelectorAll('.trend-badge');
+        trendEls.forEach(el => {
+            const key = el.dataset.trend;
+            if (stats.trends && stats.trends[key] !== undefined) {
+                const change = stats.trends[key];
+                const isPositive = change >= 0;
+                const badgeClass = isPositive ? 'bg-success' : 'bg-danger';
+                const arrow = isPositive ? '▲' : '▼';
+                const label = key === 'orders' || key === 'low_stock' ? change : `${change}%`;
+                el.className = `badge ${badgeClass} ms-1 trend-badge`;
+                el.dataset.trend = key;
+                el.textContent = `${arrow} ${Math.abs(label)} vs last period`;
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // Populate notifications dropdown
+        const notifDropdown = document.getElementById('notificationDropdown');
+        const notifCount = document.getElementById('notificationCount');
+        const auditLogsUrl = document.querySelector('[data-audit-logs-url]')?.dataset.auditLogsUrl || '#';
+        if (notifDropdown && stats.notifications) {
+            if (stats.notifications.length === 0) {
+                notifDropdown.innerHTML = `
+                    <li><h6 class="dropdown-header">Notifications</h6></li>
+                    <li><a class="dropdown-item text-muted" href="#">No new notifications</a></li>
+                `;
+            } else {
+                const items = stats.notifications.slice(0, 4).map(n => `
+                    <li><a class="dropdown-item" href="${auditLogsUrl}">${n.title} <small class="text-muted d-block">${n.user}</small></a></li>
+                `).join('');
+                notifDropdown.innerHTML = `
+                    <li><h6 class="dropdown-header">Notifications</h6></li>
+                    ${items}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-center" href="${auditLogsUrl}">View all notifications</a></li>
+                `;
+            }
+        }
+        if (notifCount && stats.notifications) {
+            notifCount.textContent = stats.notifications.length > 0 ? stats.notifications.length : '';
+            notifCount.style.display = stats.notifications.length > 0 ? 'inline-block' : 'none';
+        }
+
         // Populate recent orders table
         const tableBody = document.getElementById('recent-orders-table');
         if (tableBody && ordersData.orders) {
