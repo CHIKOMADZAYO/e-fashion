@@ -3,17 +3,23 @@
 {% block title %}The Relaxed Tailored Shirt | Upsteps{% endblock %}
 {% block content %}
 {% if product %}
-{% with image_url=product.image %}
+{% if product.image %}{% with image_url=product.image.url %}
 <header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'store_page' 'product' %}">Shop</a><span>/</span><span>{{ product.name }}</span></nav></div></header>
-<section class="fashion-container detail-layout" data-detail-product data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{% if '://' in image_url %}{{ image_url }}{% else %}{% static image_url %}{% endif %}">
-  <div class="detail-gallery"><div class="detail-gallery__main"><img src="{% if '://' in image_url %}{{ image_url }}{% else %}{% static image_url %}{% endif %}" alt="{{ product.name }}" data-gallery-main></div></div>
+<section class="fashion-container detail-layout" data-detail-product data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{{ image_url }}">
+  <div class="detail-gallery"><div class="detail-gallery__main"><img src="{{ image_url }}" alt="{{ product.name }}" data-gallery-main></div></div>
+{% else %}
+<header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'store_page' 'product' %}">Shop</a><span>/</span><span>{{ product.name }}</span></nav></div></header>
+<section class="fashion-container detail-layout" data-detail-product data-product-id="{{ product.sku }}" data-product-slug="{{ product.slug }}" data-product-url="{% url 'store_page' 'product-detail' %}?product={{ product.slug }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}" data-product-image="{% static 'ui/images/product-placeholder.jpg' %}">
+  <div class="detail-gallery"><div class="detail-gallery__main"><img src="{% static 'ui/images/product-placeholder.jpg' %}" alt="{{ product.name }}" data-gallery-main></div></div>
+{% endif %}
+{% endwith %}
   <div class="detail-info"><span class="eyebrow">UPSTEPS EDIT{% if product.is_featured %} / FEATURED{% endif %}</span><h1 data-detail-title>{{ product.name }}</h1><strong class="detail-info__price" data-detail-price>KSh {{ product.price|floatformat:2 }}</strong><p class="detail-info__description">{{ product.description|default:'A considered Upsteps piece, selected for everyday style and made to wear often.' }}</p>
     <div class="detail-buy-row"><div class="quantity-control"><button type="button" data-qty-minus aria-label="Decrease quantity">−</button><input type="number" value="1" min="1" max="{{ product.stock_quantity|default:1 }}" data-detail-quantity aria-label="Quantity"><button type="button" data-qty-plus aria-label="Increase quantity">+</button></div>{% if product.in_stock %}<button class="button button--dark" type="button" data-detail-add>Add to bag <i class="zmdi zmdi-shopping-basket"></i></button>{% else %}<button class="button button--dark" type="button" disabled>Sold out</button>{% endif %}<button class="button button--outline" type="button" data-wishlist-toggle aria-label="Add to wishlist"><i class="fa fa-heart-o"></i></button></div>
     <div class="detail-meta">SKU: {{ product.sku }} &nbsp; / &nbsp; Category: {{ product.category.name|default:'Upsteps collection' }} &nbsp; / &nbsp; Free delivery over KSh 6,499.50</div>
   </div>
 </section>
 <section class="fashion-container detail-tabs"><div class="detail-tabs__nav"><button class="is-active" type="button">Description</button></div><div class="detail-tabs__panel">{{ product.description|default:'A considered everyday piece, made for easy outfits and regular wear.' }}</div></section>
-{% endwith %}
+
 {% else %}
 <header class="page-banner"><div class="fashion-container"><nav class="breadcrumb"><a href="{% url 'home' %}">Home</a><span>/</span><a href="{% url 'store_page' 'product' %}">Shop</a><span>/</span><span>The Relaxed Tailored Shirt</span></nav></div></header>
 <section class="fashion-container detail-layout" data-detail-product data-product-id="up-002" data-product-name="Relaxed Tailored Shirt" data-product-price="4589.95" data-product-image="{% static 'ui/images/product-04.jpg' %}">

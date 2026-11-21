@@ -96,9 +96,7 @@ def _get_wishlist(request):
 def _image_url(product):
     if not product.image:
         return ""
-    if product.image.startswith(("https://", "http://")):
-        return product.image
-    return static(product.image)
+    return product.image.url
 
 
 def _product_url(product):
