@@ -157,20 +157,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Azure Blob Storage for media on Vercel (read-only filesystem)
-USE_AZURE = bool(
-    os.environ.get('AZURE_ACCOUNT_NAME')
-    and os.environ.get('AZURE_ACCOUNT_KEY')
-    and os.environ.get('AZURE_CONTAINER')
+# Vercel Blob Storage for media on Vercel (read-only filesystem)
+USE_VERCEL_BLOB = bool(
+    os.environ.get('BLOB_READ_WRITE_TOKEN')
+    and os.environ.get('BLOB_STORE_ID')
 )
-if USE_AZURE:
-    INSTALLED_APPS.append('storages')
-    AZURE_ACCOUNT_NAME = os.environ.get('AZURE_ACCOUNT_NAME', '')
-    AZURE_ACCOUNT_KEY = os.environ.get('AZURE_ACCOUNT_KEY', '')
-    AZURE_CONTAINER = os.environ.get('AZURE_CONTAINER', '')
-    AZURE_URL_EXPIRATION_SECONDS = None
-    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+if USE_VERCEL_BLOB:
+    VERCEL_BLOB_READ_WRITE_TOKEN = os.environ.get('BLOB_READ_WRITE_TOKEN', '')
+    VERCEL_BLOB_STORE_ID = os.environ.get('BLOB_STORE_ID', '')
+    DEFAULT_FILE_STORAGE = 'ecommerce.core.storage.VercelBlobStorage'
+    MEDIA_URL = f'https://{VERCEL_BLOB_STORE_ID}.blob.vercel-storage.com/'
 
 # WhiteNoise additional settings
 WHITENOISE_MAX_AGE = 31536000  # 1 year
