@@ -3,7 +3,7 @@
 @font-face { font-family:'Proxima Nova'; src:url('../fonts/Proxima%20Nova/Fontspring-DEMO-proximanova-bold.otf') format('opentype'); font-weight:700; font-display:swap; }
 :root { --fashion-ink:#231e22; --fashion-muted:#777078; --fashion-accent:#970052; --fashion-accent-dark:#76003f; --fashion-soft:#f8f4f7; --fashion-border:#e9e4e8; --fashion-white:#fff; --fashion-width:1200px; }
 html { scroll-behavior:smooth; }
-body.fashion-site { margin:0; color:var(--fashion-ink); background:#fff; font:15px/1.65 'Proxima Nova','Proxima Nova',Arial,sans-serif; }
+body.fashion-site { margin:0; color:var(--fashion-ink); background:#fff; font:15px/1.65 'Trebuchet MS','Trebuchet MS',Arial,sans-serif; }
 .fashion-site *, .fashion-site *::before, .fashion-site *::after { box-sizing:border-box; }
 .fashion-site img { max-width:100%; }
 .fashion-site a { color:inherit; text-decoration:none; }
