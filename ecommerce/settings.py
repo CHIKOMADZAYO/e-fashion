@@ -157,6 +157,21 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Azure Blob Storage for media on Vercel (read-only filesystem)
+USE_AZURE = bool(
+    os.environ.get('AZURE_ACCOUNT_NAME')
+    and os.environ.get('AZURE_ACCOUNT_KEY')
+    and os.environ.get('AZURE_CONTAINER')
+)
+if USE_AZURE:
+    INSTALLED_APPS.append('storages')
+    AZURE_ACCOUNT_NAME = os.environ.get('AZURE_ACCOUNT_NAME', '')
+    AZURE_ACCOUNT_KEY = os.environ.get('AZURE_ACCOUNT_KEY', '')
+    AZURE_CONTAINER = os.environ.get('AZURE_CONTAINER', '')
+    AZURE_URL_EXPIRATION_SECONDS = None
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+
 # WhiteNoise additional settings
 WHITENOISE_MAX_AGE = 31536000  # 1 year
 WHITENOISE_SKIP_COMPRESS_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']
